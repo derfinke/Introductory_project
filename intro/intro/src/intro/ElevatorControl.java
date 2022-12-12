@@ -1,29 +1,29 @@
 package intro;
 
-//codeexample
 import java.io.IOException;
 import java.net.UnknownHostException;
+
 import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
 
-public class ElevatorTest {
-
-	private boolean[] readRegisters = new boolean[10];
+public class ElevatorControl {
+	
 	private ModbusClient client;
 
-	public ElevatorTest() throws UnknownHostException, IOException {
+	public ElevatorControl() throws UnknownHostException, IOException {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",505);
 		client.Connect();
 	}
 
 	public void run() {
-		reset();
+
+		openDoor();
 	}
 
 	public static void main(String[] args) {
-		ElevatorTest runner;
+		ElevatorControl runner;
 		try {
-			runner = new ElevatorTest();
+			runner = new ElevatorControl();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			return;
@@ -34,13 +34,15 @@ public class ElevatorTest {
 		runner.run();
 	}
 	
-	public void reset() {
+	public void reset() 
+	{
 		try {
 			if(!client.ReadCoils(0, 1)[0])
 			{
 				client.WriteSingleCoil(0, true);
-				Thread.sleep(400);
+				Thread.sleep(500);
 				client.WriteSingleCoil(0, false);
+				Thread.sleep(200);
 			}
 			else
 			{
@@ -50,5 +52,14 @@ public class ElevatorTest {
 			e.printStackTrace();
 		}
 	}
-
+	
+	public void openDoor() 
+	{
+		try {
+			
+			client.WriteSingleCoil(12, false);
+		} catch (ModbusException | IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
