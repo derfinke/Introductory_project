@@ -8,24 +8,16 @@ import de.re.easymodbus.modbusclient.ModbusClient;
 
 public class ElevatorTest {
 
-	private int[] readRegisters = new int[10];
+	private boolean[] readRegisters = new boolean[10];
 	private ModbusClient client;
 
 	public ElevatorTest() throws UnknownHostException, IOException {
-		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",509);
+		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",505);
 		client.Connect();
 	}
 
 	public void run() {
-		while (true) {
-			try {
-				readRegisters = client.ReadInputRegisters(0, 10);
-			} catch (ModbusException | IOException e) {
-				e.printStackTrace();
-				break;
-			}
-			System.out.println(readRegisters[2]);
-		}
+		reset();
 	}
 
 	public static void main(String[] args) {
@@ -40,6 +32,28 @@ public class ElevatorTest {
 			return;
 		}
 		runner.run();
+	}
+	
+	public void reset() {
+		try {
+			readRegisters = client.ReadCoils(0, 10);
+			if(!readRegisters[0])
+			{
+				client.WriteSingleCoil(0, true);
+				while(!client.ReadCoils(0, 1)[0])
+				{
+					//do nothing
+				}
+				client.WriteSingleCoil(0, false);
+			}
+			else
+			{
+				client.WriteSingleCoil(0, false);
+			}
+			System.out.println(client.ReadCoils(0, 1)[0]);
+		} catch (ModbusException | IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
