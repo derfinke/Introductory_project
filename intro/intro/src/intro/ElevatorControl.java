@@ -24,7 +24,8 @@ public class ElevatorControl {
 	
 	public void reset() 
 	{
-		try {
+		try 
+		{
 			readSensor();
 			if(ErrorState)
 			{
@@ -42,7 +43,8 @@ public class ElevatorControl {
 	
 	public void openDoor() 
 	{
-		try {
+		try 
+		{
 			readSensor();
 			
 			if(DoorIsClosed && MotorIsReady && !MotorIsOn)
@@ -61,7 +63,8 @@ public class ElevatorControl {
 	
 	public void closeDoor()
 	{
-		try {
+		try 
+		{
 			readSensor();
 			
 			if(DoorIsOpen && !MotorIsReady && !MotorIsOn)
@@ -81,7 +84,8 @@ public class ElevatorControl {
 	
 	public void readSensor()
 	{
-		try {
+		try 
+		{
 			readValues = client.ReadDiscreteInputs(80, 5); //read values from register 10.0 - 10.4
 			
 			DoorIsOpen = readValues[0];
