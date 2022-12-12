@@ -1,5 +1,8 @@
 package intro;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -26,7 +29,14 @@ public class GUI extends JFrame {
 	 */
 	private JLabel  sa_Door_LABEL  = new JLabel("Door Control");
 	private JLabel  sa_Motor_LABEL = new JLabel("Motor Control");
-
+	
+	/*
+	 * define status labels
+	 */
+	private JLabel  sa_Door_is_OPEN   = new JLabel("Door is open");
+	private JLabel  sa_Door_is_CLOSED = new JLabel("Door is closed");
+	private JLabel  sa_Motor_is_READY = new JLabel("Motor is ready");
+	private JLabel  sa_Motor_is_ON    = new JLabel("Motor is on");
 	
 	/*
 	 * create gui
@@ -34,10 +44,11 @@ public class GUI extends JFrame {
 public GUI() {
 
 	setTitle("Elevator HMI Group D");
-    setSize(800,300);
+    setSize(750,300);
+    getContentPane().setBackground(Color.white);
     setLocationRelativeTo(null);
     setLayout(null);    
-    setResizable(false);
+    setResizable(false);      
     sa_add_constraints();
     sa_constraints_ctrl_handler();
 	}
@@ -48,35 +59,57 @@ private void sa_add_constraints() {
 	 */
 	// Reset
 	sa_RESET.setBounds(630,200, 100,40);
+	sa_RESET.setBackground(Color.red);
 	add(sa_RESET);
 
 	// Door
+	sa_Door_LABEL.setFont(new Font("Verdana", Font.PLAIN,25));
 	sa_Door_LABEL.setBounds(10,10, 200,40);
 	add(sa_Door_LABEL);
-
+	
+	sa_Door_OPEN.setBackground(Color.LIGHT_GRAY);
 	sa_Door_OPEN.setBounds(110,60, 100,40);
 	add(sa_Door_OPEN);
 
+	sa_Door_CLOSE.setBackground(Color.LIGHT_GRAY);
 	sa_Door_CLOSE.setBounds(10,60, 100,40);
 	add(sa_Door_CLOSE);
 
-	// Motor 
+	// Motor
+	sa_Motor_LABEL.setFont(new Font("Verdana", Font.PLAIN,25));
 	sa_Motor_LABEL.setBounds(330,10, 200,40);
 	add(sa_Motor_LABEL);
 
 	// Motor UP
+	sa_Motor_UP_V1.setBackground(Color.LIGHT_GRAY);
 	sa_Motor_UP_V1.setBounds(330,60, 100,40);
 	add(sa_Motor_UP_V1);
 	
+	sa_Motor_UP_V2.setBackground(Color.LIGHT_GRAY);
 	sa_Motor_UP_V2.setBounds(430,60, 100,40);
 	add(sa_Motor_UP_V2);
 
 	// Motor Down
+	sa_Motor_DOWN_V1.setBackground(Color.LIGHT_GRAY);
 	sa_Motor_DOWN_V1.setBounds(530,60, 100,40);
 	add(sa_Motor_DOWN_V1);
-
+	
+	sa_Motor_DOWN_V2.setBackground(Color.LIGHT_GRAY);
 	sa_Motor_DOWN_V2.setBounds(630,60, 100,40);
 	add(sa_Motor_DOWN_V2);
+	
+	// status labels
+	sa_Door_is_OPEN.setBounds(100, 130, 100, 40);
+	add(sa_Door_is_OPEN);
+
+	sa_Door_is_CLOSED.setBounds(100, 200, 100, 40);
+	add(sa_Door_is_CLOSED);
+
+	sa_Motor_is_READY.setBounds(410, 130, 100, 40);
+	add(sa_Motor_is_READY);
+
+	sa_Motor_is_ON.setBounds(410, 200, 100, 40);
+	add(sa_Motor_is_ON);
 
 }
 
@@ -133,6 +166,14 @@ private void sa_constraints_ctrl_handler() {
 			// TO-DO: create function or hook to send the elevator downwards with v2
 		}
 	});
+}
+
+public void paint(Graphics g) {
+	super.paint(g);
+	g.drawOval(30, 150, 60, 60);
+	g.drawOval(30, 220, 60, 60);
+	g.drawOval(340, 150, 60, 60);
+	g.drawOval(340, 220, 60, 60);
 }
 
 }
