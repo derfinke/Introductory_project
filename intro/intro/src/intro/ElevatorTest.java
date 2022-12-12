@@ -38,7 +38,6 @@ public class ElevatorTest {
 		try {
 			if(!client.ReadCoils(0, 1)[0])
 			{
-				System.out.println("in if condition");
 				client.WriteSingleCoil(0, true);
 				Thread.sleep(400);
 				client.WriteSingleCoil(0, false);
@@ -46,9 +45,7 @@ public class ElevatorTest {
 			else
 			{
 				client.WriteSingleCoil(0, false);
-				System.out.println("in else condition");
 			}
-			System.out.println(client.ReadCoils(0, 1)[0]);
 		} catch (ModbusException | IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
