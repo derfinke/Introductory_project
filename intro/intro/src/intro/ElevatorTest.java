@@ -22,6 +22,9 @@ public class ElevatorTest {
 
 	public static void main(String[] args) {
 		ElevatorTest runner;
+		GUI gui = new GUI();
+		gui.setVisible(true);
+		
 		try {
 			runner = new ElevatorTest();
 		} catch (UnknownHostException e) {
@@ -31,7 +34,7 @@ public class ElevatorTest {
 			e.printStackTrace();
 			return;
 		}
-		runner.run();
+		//runner.run();
 	}
 	
 	public void reset() {
