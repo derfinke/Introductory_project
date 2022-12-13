@@ -47,17 +47,17 @@ public class GUI extends JFrame {
 	 * booleans represent the test flags for the status lights
 	 * (GREEN/RED) Test/Change the color by click on the button DOOR Control: CLOSE,OPEN;
 	 */
-	private boolean sa_EMERGENCY_STOP_FLAG = false;
-	private boolean sa_Door_is_OPEN_FLAG   = false;
-	private boolean sa_Door_is_CLOSED_FLAG = false;
-	private boolean sa_Motor_is_READY_FLAG = false;
-	private boolean sa_Motor_is_ON_FLAG    = false;
+	public boolean sa_EMERGENCY_STOP_FLAG = false;
+	public boolean sa_Door_is_OPEN_FLAG   = false;
+	public boolean sa_Door_is_CLOSED_FLAG = false;
+	public boolean sa_Motor_is_READY_FLAG = false;
+	public boolean sa_Motor_is_ON_FLAG    = false;
 
+	private ClientThread client;
 	/*
 	 * create gui
 	 */
 	public GUI() {
-
 		setTitle("Elevator HMI Group D");
 		setSize(750, 300);
 		getContentPane().setBackground(Color.white);
@@ -99,25 +99,25 @@ public class GUI extends JFrame {
 		sa_Motor_LABEL.setBounds(330, 10, 200, 40);
 		add(sa_Motor_LABEL);
 
-		// Motor UP V1 button
-		sa_Motor_UP_V1.setBackground(Color.LIGHT_GRAY);
-		sa_Motor_UP_V1.setBounds(330, 60, 100, 40);
-		add(sa_Motor_UP_V1);
-
-		// Motor UP V2 button
-		sa_Motor_UP_V2.setBackground(Color.LIGHT_GRAY);
-		sa_Motor_UP_V2.setBounds(430, 60, 100, 40);
-		add(sa_Motor_UP_V2);
-
-		// Motor Down V1 button
-		sa_Motor_DOWN_V1.setBackground(Color.LIGHT_GRAY);
-		sa_Motor_DOWN_V1.setBounds(530, 60, 100, 40);
-		add(sa_Motor_DOWN_V1);
-
-		// Motor Down V2 button
-		sa_Motor_DOWN_V2.setBackground(Color.LIGHT_GRAY);
-		sa_Motor_DOWN_V2.setBounds(630, 60, 100, 40);
-		add(sa_Motor_DOWN_V2);
+//		// Motor UP V1 button
+//		sa_Motor_UP_V1.setBackground(Color.LIGHT_GRAY);
+//		sa_Motor_UP_V1.setBounds(330, 60, 100, 40);
+//		add(sa_Motor_UP_V1);
+//
+//		// Motor UP V2 button
+//		sa_Motor_UP_V2.setBackground(Color.LIGHT_GRAY);
+//		sa_Motor_UP_V2.setBounds(430, 60, 100, 40);
+//		add(sa_Motor_UP_V2);
+//
+//		// Motor Down V1 button
+//		sa_Motor_DOWN_V1.setBackground(Color.LIGHT_GRAY);
+//		sa_Motor_DOWN_V1.setBounds(530, 60, 100, 40);
+//		add(sa_Motor_DOWN_V1);
+//
+//		// Motor Down V2 button
+//		sa_Motor_DOWN_V2.setBackground(Color.LIGHT_GRAY);
+//		sa_Motor_DOWN_V2.setBounds(630, 60, 100, 40);
+//		add(sa_Motor_DOWN_V2);
 
 		// Status text labels
 		sa_Door_is_OPEN.setBounds(100, 130, 100, 40);
@@ -148,122 +148,95 @@ public class GUI extends JFrame {
 		// event click to RESET the simulation
 		sa_RESET.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				/*
-				 *  TO-DO create function or hook to reset the simuation
-				 */
+				
+				client.send("reset", true);
 				update_GUI_FLAGS();
 			}
 		});
 		// event click to open the door
 		sa_Door_OPEN.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+				client.send("open", true);
 				// poll,update registers before run action
 				update_GUI_FLAGS();
 				// if no crash on the end sensors, run your function... 
-				if(!sa_EMERGENCY_STOP_FLAG) {
-				/*
-				 *  TO-DO create function or hook to open the door
-				 *  changes in function update_GUI_FLAGS() are needed.
-				 */
-				}
-				
-				// delete from here... Just for testing the status lights, can be deleted
-				sa_Door_is_OPEN_FLAG   = true;
-				sa_Door_is_CLOSED_FLAG = true;
-				sa_Motor_is_READY_FLAG = true;
-				sa_Motor_is_ON_FLAG    = true;
-				repaint();
-				// to here
 			}
 		});
 		// event click to close the door
 		sa_Door_CLOSE.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+				client.send("close", true);
 				// poll,update registers before run action
 				update_GUI_FLAGS();
 				// if no crash on the end sensors, run your function... 
-				if(!sa_EMERGENCY_STOP_FLAG) {
-				/*
-				 *  TO-DO: create function or hook to close the door
-				 *  changes in function update_GUI_FLAGS() are needed.
-				 */
-				}
-				// delete from here... Just for testing the status lights, can be deleted
-				sa_Door_is_OPEN_FLAG   = false;
-				sa_Door_is_CLOSED_FLAG = false;
-				sa_Motor_is_READY_FLAG = false;
-				sa_Motor_is_ON_FLAG    = false;
-				repaint();
-				// to here
-			}
-		});
-		// event click to send the elevator upwards with v1
-		sa_Motor_UP_V1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// poll,update registers before run action
-				update_GUI_FLAGS();
-				// if no crash on the end sensors, run your function...
-				if (!sa_EMERGENCY_STOP_FLAG) {
-					/*
-					 * TO-DO create function or hook to send the elevator upwards with v1
-					 * changes in function update_GUI_FLAGS() are needed.
-					 */
-				}
-			}
-		});
-		// event click to send the elevator upwards with v2
-		sa_Motor_UP_V2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// poll,update registers before run action
-				update_GUI_FLAGS();
-				// if no crash on the end sensors, run your function...
-				if (!sa_EMERGENCY_STOP_FLAG) {
-					/*
-					 *  TO-DO: create function or hook to send the elevator upwards with v2
-					 *  changes in function update_GUI_FLAGS() are needed.
-					 */
-				}
-			}
-		});
-		// event click to send the elevator downwards with v1
-		sa_Motor_DOWN_V1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// poll,update registers before run action
-				update_GUI_FLAGS();
-				// if no crash on the end sensors, run your function...
-				if (!sa_EMERGENCY_STOP_FLAG) {
-					/*
-					 *  TO-DO: create function or hook to send the elevator downwards with v1
-					 *  changes in function update_GUI_FLAGS() are needed.
-					 */
-				}
-			}
-		});
-		// event click to send the elevator downwards with v2
-		sa_Motor_DOWN_V2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// poll,update registers before run action
-				update_GUI_FLAGS();
-				// if no crash on the end sensors, run your function...
-				if (!sa_EMERGENCY_STOP_FLAG) {
-					/*
-					 *  TO-DO: create function or hook to send the elevator downwards with v2
-					 *  changes in function update_GUI_FLAGS() are needed.
-					 */
-				}
 			}
 		});
 	}
+//
+//		// event click to send the elevator upwards with v1
+//		sa_Motor_UP_V1.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				// poll,update registers before run action
+//				update_GUI_FLAGS();
+//				// if no crash on the end sensors, run your function...
+//				if (!sa_EMERGENCY_STOP_FLAG) {
+//					/*
+//					 * TO-DO create function or hook to send the elevator upwards with v1
+//					 * changes in function update_GUI_FLAGS() are needed.
+//					 */
+//				}
+//			}
+//		});
+//		// event click to send the elevator upwards with v2
+//		sa_Motor_UP_V2.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				// poll,update registers before run action
+//				update_GUI_FLAGS();
+//				// if no crash on the end sensors, run your function...
+//				if (!sa_EMERGENCY_STOP_FLAG) {
+//					/*
+//					 *  TO-DO: create function or hook to send the elevator upwards with v2
+//					 *  changes in function update_GUI_FLAGS() are needed.
+//					 */
+//				}
+//			}
+//		});
+//		// event click to send the elevator downwards with v1
+//		sa_Motor_DOWN_V1.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				// poll,update registers before run action
+//				update_GUI_FLAGS();
+//				// if no crash on the end sensors, run your function...
+//				if (!sa_EMERGENCY_STOP_FLAG) {
+//					/*
+//					 *  TO-DO: create function or hook to send the elevator downwards with v1
+//					 *  changes in function update_GUI_FLAGS() are needed.
+//					 */
+//				}
+//			}
+//		});
+//		// event click to send the elevator downwards with v2
+//		sa_Motor_DOWN_V2.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				// poll,update registers before run action
+//				update_GUI_FLAGS();
+//				// if no crash on the end sensors, run your function...
+//				if (!sa_EMERGENCY_STOP_FLAG) {
+//					/*
+//					 *  TO-DO: create function or hook to send the elevator downwards with v2
+//					 *  changes in function update_GUI_FLAGS() are needed.
+//					 */
+//				}
+//			}
+//		});
+//	}
 
 	/*
 	 * update all important flags from controller to update the GUI
 	 */
 	public void update_GUI_FLAGS() {
-		sa_EMERGENCY_STOP_FLAG = false; // just for understanding sa_EMERGENCY_STOP_FLAG = client.ReadCoils(0, 1)[0]; something like this
-		sa_Door_is_OPEN_FLAG   = false;
-		sa_Door_is_CLOSED_FLAG = false;
-		sa_Motor_is_READY_FLAG = false;
-		sa_Motor_is_ON_FLAG    = false;
 		repaint();
 	}
 	
@@ -326,6 +299,10 @@ public class GUI extends JFrame {
 			graphics2d.fill(sa_Motor_Circle_is_ON);
 		}
 		
+	}
+	public void initClientThread(ClientThread client)
+	{
+		this.client = client;
 	}
 
 }
