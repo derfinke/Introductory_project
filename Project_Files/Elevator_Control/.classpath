@@ -6,7 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="D:/Sys_Arch_Intro/Introductory_project/lib/EasyModbusJava.jar"/>
-	<classpathentry kind="lib" path="D:/Sys_Arch_Intro/Introductory_project/lib/java-json.jar"/>
+	<classpathentry kind="lib" path="lib/EasyModbusJava.jar"/>
+	<classpathentry kind="lib" path="lib/java-json.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

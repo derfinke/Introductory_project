@@ -22,6 +22,24 @@ public class ElevatorControl {
 		client.Connect();
 	}
 	
+	public void run() {
+		reset();
+	}
+
+	public static void main(String[] args) {
+		ElevatorControl runner;
+		try {
+			runner = new ElevatorControl();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+		runner.run();
+	}
+	
 	public void reset() 
 	{
 		try 
