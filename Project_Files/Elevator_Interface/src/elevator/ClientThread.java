@@ -20,40 +20,31 @@ public class ClientThread extends Thread{
     }
 
     public void run() {
-    	try {
-			Thread.sleep(10000);
-			receiveMessage("isOpen");
-			Thread.sleep(10000);
-			receiveMessage("isClosed");
-		} catch (InterruptedException | JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-//        try {
-//            InetAddress host = InetAddress.getLocalHost();
-//            server = new Socket(host.getHostName(), port);
-//            System.out.println("connected");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        while(true){
-//            //read from socket to ObjectInputStream object
-//            ObjectInputStream ois;
-//            String message = null;
-//            try {
-//                ois = new ObjectInputStream(server.getInputStream());
-//                //convert ObjectInputStream object to String
-//                message = (String) ois.readObject();
-//            } catch (IOException | ClassNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                receiveMessage(message);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        try {
+            InetAddress host = InetAddress.getLocalHost();
+            server = new Socket(host.getHostName(), port);
+            System.out.println("connected");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        while(true){
+            //read from socket to ObjectInputStream object
+            ObjectInputStream ois;
+            String message = null;
+            try {
+                ois = new ObjectInputStream(server.getInputStream());
+                //convert ObjectInputStream object to String
+                message = (String) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            try {
+                receiveMessage(message);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void send(String data, boolean value) {
@@ -67,28 +58,33 @@ public class ClientThread extends Thread{
 			json.put("value", value);
 			ObjectOutputStream oos = new ObjectOutputStream(server.getOutputStream());
 			oos.writeObject(json.toString());
+			System.out.println(json.toString());
+			
 		} catch (JSONException | IOException e) {
 			e.printStackTrace();
 		}
     }
 
     private void receiveMessage(String message) throws JSONException {
-//        JSONObject json = new JSONObject(message);
-//        String data = json.getString("data");
-//        boolean value = json.getBoolean("value");
-        switch (message) {
-            case "isOpen":
-            	gui.sa_Door_is_CLOSED_FLAG = false;
-            	gui.sa_Door_is_OPEN_FLAG = true;
-            	gui.repaint();
-                System.out.println("is open: true");
-                break;
-            case "isClosed":
-            	gui.sa_Door_is_CLOSED_FLAG = true;
-            	gui.sa_Door_is_OPEN_FLAG = false;
-            	gui.repaint();
-            	System.out.println("is closed: true");
-                break;
-        }
+        try {
+			JSONObject json = new JSONObject(message);
+			String data = json.getString("data");
+			boolean value = json.getBoolean("value");
+			switch (data) {
+			    case "isOpen":
+			    	gui.sa_Door_is_CLOSED_FLAG = false;
+			    	gui.sa_Door_is_OPEN_FLAG = true;
+			    	gui.repaint();
+			        System.out.println("is open: " + value);
+			        break;
+			    case "isClosed":
+			    	gui.sa_Door_is_CLOSED_FLAG = true;
+			    	gui.sa_Door_is_OPEN_FLAG = false;
+			    	gui.repaint();
+			        break;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
     }
 }
