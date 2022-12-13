@@ -12,11 +12,10 @@ import java.security.InvalidParameterException;
 public class ServerThread extends Thread{
     private final int port;
     private Socket client;
-    //todo: private Control control;
+    private ElevatorControl control;
 
-    public ServerThread(int port/*todo: , Control control*/) {
+    public ServerThread(int port) {
         this.port = port;
-        //todo: this.control = control;
     }
 
     public void run() {
@@ -40,7 +39,7 @@ public class ServerThread extends Thread{
                 e.printStackTrace();
             }
             try {
-                parseMessage(message);
+                receiveMessage(message);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -48,32 +47,56 @@ public class ServerThread extends Thread{
     }
 
     public void send(String data, boolean value) throws IOException, JSONException {
-        if (!(data.equals("isOpen") || data.equals("isClosed"))){
-            throw new InvalidParameterException();
-        }
-        JSONObject json = new JSONObject();
-        json.put("data", data);
-        json.put("value", value);
-        ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
-        oos.writeObject(json.toString());
+        try {
+			if (!(data.equals("isOpen") || data.equals("isClosed"))){
+			    throw new InvalidParameterException();
+			}
+			JSONObject json = new JSONObject();
+			json.put("data", data);
+			json.put("value", value);
+			ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
+			oos.writeObject(json.toString());
+		} catch (JSONException | IOException e) {
+			e.printStackTrace();
+		} 
     }
 
-    private void parseMessage(String message) throws JSONException {
-        JSONObject json = new JSONObject(message);
-        String data = json.getString("data");
-        boolean value = json.getBoolean("value");
-        switch (data) {
-            case "reset":
-                //todo: gui.reset(value)
-                System.out.println("reset: " + value);
-                break;
-            case "open":
-                //todo: gui.openDoor(value)
-                break;
-            case "close":
-                //todo: gui.closeDoor(value)
-                break;
-        }
-
+    private void receiveMessage(String message) throws JSONException {
+        try {
+			JSONObject json = new JSONObject(message);
+			String data = json.getString("data");
+			boolean value = json.getBoolean("value");
+			switch (data) {
+			    case "reset":
+			    	control.reset();
+			        System.out.println("reset: " + value);
+			        break;
+			    case "open":
+			    	control.openDoor();
+			    	System.out.println("open door: " + value);
+			    	while(!control.DoorIsOpen)
+			    	{
+			    		control.readSensor();
+			    	}
+			    	send("isOpen", true);
+			        break;
+			    case "close":
+			    	control.closeDoor();
+			    	System.out.println("close door: " + value);
+			    	while(!control.DoorIsClosed)
+			    	{
+			    		control.readSensor();
+			    	}
+			    	send("isClosed", true);
+			        break;
+			}
+		} catch (JSONException | IOException e) {
+			e.printStackTrace();
+		} 
+    }
+    
+    public void initElevatorControl(ElevatorControl control)
+    {
+    	this.control = control;
     }
 }
