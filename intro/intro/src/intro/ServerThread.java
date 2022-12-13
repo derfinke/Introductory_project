@@ -1,4 +1,4 @@
-package com.company;
+package intro;
 
 import org.json.JSONObject;
 import org.json.JSONException;
