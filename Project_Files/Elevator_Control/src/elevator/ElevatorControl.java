@@ -9,12 +9,12 @@ import de.re.easymodbus.modbusclient.ModbusClient;
 public class ElevatorControl {
 	
 	private ModbusClient client;
-	private boolean DoorIsOpen;
-	private boolean DoorIsClosed;
-	private boolean MotorIsReady;
-	private boolean MotorIsOn;
-	private boolean ErrorState;
-
+	public boolean DoorIsOpen;
+	public boolean DoorIsClosed;
+	public boolean MotorIsReady;
+	public boolean MotorIsOn;
+	public boolean ErrorState;
+	
 	private boolean[] readValues = new boolean[5]; 
 
 	public ElevatorControl() throws UnknownHostException, IOException {
