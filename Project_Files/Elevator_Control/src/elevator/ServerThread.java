@@ -48,7 +48,7 @@ public class ServerThread extends Thread{
 
     public void send(String data, boolean value) throws IOException, JSONException {
         try {
-			if (!(data.equals("isOpen") || data.equals("isClosed"))){
+			if (!(data.equals("isOpen") || data.equals("isClosed") || data.equals("status"))){
 			    throw new InvalidParameterException();
 			}
 			JSONObject json = new JSONObject();
@@ -70,6 +70,8 @@ public class ServerThread extends Thread{
 			    case "reset":
 			    	control.reset();
 			        System.out.println("reset: " + value);
+			    	control.readSensor();
+			    	send("status", control.getDoorIsClosed());
 			        break;
 			    case "open":
 			    	control.openDoor();
@@ -89,6 +91,9 @@ public class ServerThread extends Thread{
 			    	}
 			    	send("isClosed", true);
 			        break;
+			    case "status":
+			    	control.readSensor();
+			    	send("status", control.getDoorIsClosed());
 			}
 		} catch (JSONException | IOException e) {
 			e.printStackTrace();
