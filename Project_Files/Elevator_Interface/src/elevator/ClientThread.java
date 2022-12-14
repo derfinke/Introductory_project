@@ -24,6 +24,7 @@ public class ClientThread extends Thread{
             InetAddress host = InetAddress.getLocalHost();
             server = new Socket(host.getHostName(), port);
             System.out.println("connected");
+            send("status", true);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,7 +51,7 @@ public class ClientThread extends Thread{
     public void send(String data, boolean value) {
     
         try {
-			if (!(data.equals("reset") || data.equals("open") || data.equals("close"))){
+			if (!(data.equals("reset") || data.equals("open") || data.equals("close") || (data.equals("status")))){
 			    throw new InvalidParameterException();
 			}
 			JSONObject json = new JSONObject();
@@ -83,6 +84,19 @@ public class ClientThread extends Thread{
 			    	gui.repaint();
 			    	System.out.println("is closed: " + value);
 			        break;
+			    case "status":
+			    	if(value)
+			    	{
+				    	gui.setSa_Door_is_OPEN_FLAG(false);
+				    	gui.setSa_Door_is_CLOSED_FLAG(true);
+				    	gui.repaint();
+			    	}
+			    	else
+			    	{
+			    		gui.setSa_Door_is_OPEN_FLAG(true);
+				    	gui.setSa_Door_is_CLOSED_FLAG(false);
+				    	gui.repaint();
+			    	}
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
