@@ -19,7 +19,6 @@ public class ElevatorControl {
 
 	
 	public boolean getDoorIsOpen() {
-		readSensor();
 		return DoorIsOpen;
 	}
 
@@ -28,7 +27,6 @@ public class ElevatorControl {
 	}
 
 	public boolean getDoorIsClosed() {
-		readSensor();
 		return DoorIsClosed;
 	}
 
@@ -37,7 +35,6 @@ public class ElevatorControl {
 	}
 
 	public boolean getErrorState() {
-		readSensor();
 		return ErrorState;
 	}
 

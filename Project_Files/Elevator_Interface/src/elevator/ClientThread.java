@@ -72,15 +72,16 @@ public class ClientThread extends Thread{
 			boolean value = json.getBoolean("value");
 			switch (data) {
 			    case "isOpen":
-			    	gui.sa_Door_is_CLOSED_FLAG = false;
-			    	gui.sa_Door_is_OPEN_FLAG = true;
+			    	gui.setSa_Door_is_CLOSED_FLAG(false);
+			    	gui.setSa_Door_is_OPEN_FLAG(true);
 			    	gui.repaint();
 			        System.out.println("is open: " + value);
 			        break;
 			    case "isClosed":
-			    	gui.sa_Door_is_CLOSED_FLAG = true;
-			    	gui.sa_Door_is_OPEN_FLAG = false;
+			    	gui.setSa_Door_is_OPEN_FLAG(false);
+			    	gui.setSa_Door_is_CLOSED_FLAG(true);
 			    	gui.repaint();
+			    	System.out.println("is closed: " + value);
 			        break;
 			}
 		} catch (JSONException e) {

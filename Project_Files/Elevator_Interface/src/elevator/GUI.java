@@ -47,11 +47,11 @@ public class GUI extends JFrame {
 	 * booleans represent the test flags for the status lights
 	 * (GREEN/RED) Test/Change the color by click on the button DOOR Control: CLOSE,OPEN;
 	 */
-	public boolean sa_EMERGENCY_STOP_FLAG = false;
-	public boolean sa_Door_is_OPEN_FLAG   = false;
-	public boolean sa_Door_is_CLOSED_FLAG = false;
-	public boolean sa_Motor_is_READY_FLAG = false;
-	public boolean sa_Motor_is_ON_FLAG    = false;
+	private boolean sa_EMERGENCY_STOP_FLAG = false;
+	private boolean sa_Door_is_OPEN_FLAG   = false;
+	private boolean sa_Door_is_CLOSED_FLAG = false;
+	private boolean sa_Motor_is_READY_FLAG = false;
+	private boolean sa_Motor_is_ON_FLAG    = false;
 
 	private ClientThread client;
 	/*
@@ -72,6 +72,9 @@ public class GUI extends JFrame {
 	/*
 	 * Label & button & status constraints
 	 */
+	
+	
+	
 	private void sa_add_constraints() {
 
 		// Reset button
@@ -132,6 +135,30 @@ public class GUI extends JFrame {
 		sa_Motor_is_ON.setBounds(410, 200, 100, 40);
 		add(sa_Motor_is_ON);
 
+	}
+
+	public boolean getSa_EMERGENCY_STOP_FLAG() {
+		return sa_EMERGENCY_STOP_FLAG;
+	}
+
+	public void setSa_EMERGENCY_STOP_FLAG(boolean sa_EMERGENCY_STOP_FLAG) {
+		this.sa_EMERGENCY_STOP_FLAG = sa_EMERGENCY_STOP_FLAG;
+	}
+
+	public boolean getSa_Door_is_OPEN_FLAG() {
+		return sa_Door_is_OPEN_FLAG;
+	}
+
+	public void setSa_Door_is_OPEN_FLAG(boolean sa_Door_is_OPEN_FLAG) {
+		this.sa_Door_is_OPEN_FLAG = sa_Door_is_OPEN_FLAG;
+	}
+
+	public boolean getSa_Door_is_CLOSED_FLAG() {
+		return sa_Door_is_CLOSED_FLAG;
+	}
+
+	public void setSa_Door_is_CLOSED_FLAG(boolean sa_Door_is_CLOSED_FLAG) {
+		this.sa_Door_is_CLOSED_FLAG = sa_Door_is_CLOSED_FLAG;
 	}
 
 	/*
