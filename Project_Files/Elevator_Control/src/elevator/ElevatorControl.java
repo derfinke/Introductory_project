@@ -45,6 +45,8 @@ public class ElevatorControl {
 	public ElevatorControl() throws UnknownHostException, IOException {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",505);
 		client.Connect();
+		reset();
+		
 	}
 
 	public void reset() 
@@ -52,15 +54,20 @@ public class ElevatorControl {
 		try 
 		{
 			readSensor();
-			if(ErrorState)
-			{
-				client.WriteSingleCoil(0, true);
-			}
-			else
-			{
-				client.WriteSingleCoil(0, false);
-				System.out.println("No reset needed");
-			}
+            client.WriteSingleRegister(0, 1);
+
+            // Set the velocity to 0
+            client.WriteSingleRegister(1, 0);
+            client.WriteSingleCoil(8, false);
+            client.WriteSingleCoil(9, false);
+            client.WriteSingleCoil(10, false);
+            client.WriteSingleCoil(11, false);
+
+            // Reset door opening / closing
+            client.WriteSingleCoil(12, false);
+            client.WriteSingleCoil(13, false);
+
+            client.WriteSingleRegister(0, 0);
 		} catch (ModbusException | IOException e) {
 			e.printStackTrace();
 		}

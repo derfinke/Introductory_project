@@ -94,9 +94,9 @@ public class GUI extends JFrame {
 		add(sa_Door_CLOSE);
 
 		// Motor text Label
-		sa_Motor_LABEL.setFont(new Font("Verdana", Font.PLAIN, 25));
-		sa_Motor_LABEL.setBounds(330, 10, 200, 40);
-		add(sa_Motor_LABEL);
+//		sa_Motor_LABEL.setFont(new Font("Verdana", Font.PLAIN, 25));
+//		sa_Motor_LABEL.setBounds(330, 10, 200, 40);
+//		add(sa_Motor_LABEL);
 
 //		// Motor UP V1 button
 //		sa_Motor_UP_V1.setBackground(Color.LIGHT_GRAY);
@@ -125,11 +125,11 @@ public class GUI extends JFrame {
 		sa_Door_is_CLOSED.setBounds(100, 200, 100, 40);
 		add(sa_Door_is_CLOSED);
 
-		sa_Motor_is_READY.setBounds(410, 130, 100, 40);
-		add(sa_Motor_is_READY);
-
-		sa_Motor_is_ON.setBounds(410, 200, 100, 40);
-		add(sa_Motor_is_ON);
+//		sa_Motor_is_READY.setBounds(410, 130, 100, 40);
+//		add(sa_Motor_is_READY);
+//
+//		sa_Motor_is_ON.setBounds(410, 200, 100, 40);
+//		add(sa_Motor_is_ON);
 
 	}
 
@@ -275,13 +275,13 @@ public class GUI extends JFrame {
 		// round status lights
 		Ellipse2D.Double sa_Door_Circle_is_OPEN   = new Ellipse2D.Double(30, 150, 60, 60);
 		Ellipse2D.Double sa_Door_Circle_is_CLOSED = new Ellipse2D.Double(30, 220, 60, 60);
-		Ellipse2D.Double sa_Motor_Circle_is_Ready = new Ellipse2D.Double(340, 150, 60, 60);
-		Ellipse2D.Double sa_Motor_Circle_is_ON    = new Ellipse2D.Double(340, 220, 60, 60);
+//		Ellipse2D.Double sa_Motor_Circle_is_Ready = new Ellipse2D.Double(340, 150, 60, 60);
+//		Ellipse2D.Double sa_Motor_Circle_is_ON    = new Ellipse2D.Double(340, 220, 60, 60);
 		// fill status lights
 		graphics2d.fill(sa_Door_Circle_is_OPEN);
 		graphics2d.fill(sa_Door_Circle_is_CLOSED);
-		graphics2d.fill(sa_Motor_Circle_is_Ready);
-		graphics2d.fill(sa_Motor_Circle_is_ON);
+//		graphics2d.fill(sa_Motor_Circle_is_Ready);
+//		graphics2d.fill(sa_Motor_Circle_is_ON);
 
 		// check state of booleans, fill green if true... fill red if false
 	    if(sa_EMERGENCY_STOP_FLAG) {
@@ -306,21 +306,21 @@ public class GUI extends JFrame {
 			graphics2d.fill(sa_Door_Circle_is_CLOSED);
 		}
 
-		if (sa_Motor_is_READY_FLAG) {
-			g.setColor(Color.GREEN);
-			graphics2d.fill(sa_Motor_Circle_is_Ready);
-		} else {
-			g.setColor(Color.RED);
-			graphics2d.fill(sa_Motor_Circle_is_Ready);
-		}
-
-		if (sa_Motor_is_ON_FLAG) {
-			g.setColor(Color.GREEN);
-			graphics2d.fill(sa_Motor_Circle_is_ON);
-		} else {
-			g.setColor(Color.RED);
-			graphics2d.fill(sa_Motor_Circle_is_ON);
-		}
+//		if (sa_Motor_is_READY_FLAG) {
+//			g.setColor(Color.GREEN);
+//			graphics2d.fill(sa_Motor_Circle_is_Ready);
+//		} else {
+//			g.setColor(Color.RED);
+//			graphics2d.fill(sa_Motor_Circle_is_Ready);
+//		}
+//
+//		if (sa_Motor_is_ON_FLAG) {
+//			g.setColor(Color.GREEN);
+//			graphics2d.fill(sa_Motor_Circle_is_ON);
+//		} else {
+//			g.setColor(Color.RED);
+//			graphics2d.fill(sa_Motor_Circle_is_ON);
+//		}
 		
 	}
 	public void initClientThread(ClientThread client)

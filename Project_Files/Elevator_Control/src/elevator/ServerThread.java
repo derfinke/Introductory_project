@@ -70,6 +70,8 @@ public class ServerThread extends Thread{
 			    case "reset":
 			    	control.reset();
 			        System.out.println("reset: " + value);
+			    	control.readSensor();
+			    	send("status", control.getDoorIsClosed());
 			        break;
 			    case "open":
 			    	control.openDoor();
