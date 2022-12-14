@@ -74,7 +74,7 @@ public class ServerThread extends Thread{
 			    case "open":
 			    	control.openDoor();
 			    	System.out.println("open door: " + value);
-			    	while(!control.DoorIsOpen)
+			    	while(!control.getDoorIsOpen())
 			    	{
 			    		control.readSensor();
 			    	}
@@ -83,7 +83,7 @@ public class ServerThread extends Thread{
 			    case "close":
 			    	control.closeDoor();
 			    	System.out.println("close door: " + value);
-			    	while(!control.DoorIsClosed)
+			    	while(!control.getDoorIsClosed())
 			    	{
 			    		control.readSensor();
 			    	}

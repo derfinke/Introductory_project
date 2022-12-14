@@ -9,13 +9,38 @@ import de.re.easymodbus.modbusclient.ModbusClient;
 public class ElevatorControl {
 	
 	private ModbusClient client;
-	public boolean DoorIsOpen;
-	public boolean DoorIsClosed;
-	public boolean MotorIsReady;
-	public boolean MotorIsOn;
-	public boolean ErrorState;
+	private boolean DoorIsOpen;
+	private boolean DoorIsClosed;
+	private boolean MotorIsReady;
+	private boolean MotorIsOn;
+    private boolean ErrorState;
 	
 	private boolean[] readValues = new boolean[5]; 
+
+	
+	public boolean getDoorIsOpen() {
+		return DoorIsOpen;
+	}
+
+	public void setDoorIsOpen(boolean doorIsOpen) {
+		DoorIsOpen = doorIsOpen;
+	}
+
+	public boolean getDoorIsClosed() {
+		return DoorIsClosed;
+	}
+
+	public void setDoorIsClosed(boolean doorIsClosed) {
+		DoorIsClosed = doorIsClosed;
+	}
+
+	public boolean getErrorState() {
+		return ErrorState;
+	}
+
+	public void setErrorState(boolean errorState) {
+		ErrorState = errorState;
+	}
 
 	public ElevatorControl() throws UnknownHostException, IOException {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",505);
