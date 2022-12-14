@@ -68,13 +68,9 @@ public class GUI extends JFrame {
 		sa_constraints_ctrl_handler();
 		setVisible(true);
 	}
-
 	/*
 	 * Label & button & status constraints
 	 */
-	
-	
-	
 	private void sa_add_constraints() {
 
 		// Reset button
