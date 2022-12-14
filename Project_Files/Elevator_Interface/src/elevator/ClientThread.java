@@ -20,14 +20,35 @@ public class ClientThread extends Thread{
     }
 
     public void run() {
-        try {
-            InetAddress host = InetAddress.getLocalHost();
-            server = new Socket(host.getHostName(), port);
-            System.out.println("connected");
-            send("status", true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    	int conn_attempt = 3;
+    	
+    	while(server == null) {
+	        try {
+	            InetAddress host = InetAddress.getLocalHost();
+	            server = new Socket(host.getHostName(), port);
+	            
+	            System.out.println("connected");
+	            
+	            send("status", true);
+	        } catch (IOException e) {
+	        	if(conn_attempt <= 0) {
+	        		System.out.println("Failed to connect to server!\n");
+	        		System.out.println("Make sure Elevator Control is running and not timed out!");
+	        		System.out.println("Program closed.");
+	        		System.exit(0);
+	        		//e.printStackTrace();
+	        	}
+	        	else {
+	        		System.out.println("Client connection attempt: "+(4-conn_attempt));
+	        		conn_attempt = conn_attempt - 1;
+	        		try {
+						Thread.sleep(200);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+	        	}
+	        }
+    	}
 
         while(true){
             //read from socket to ObjectInputStream object
