@@ -1,16 +1,16 @@
-package elevator;
+package Control;
 
-import org.json.JSONException;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.IOException;
 
 public class Main {
-	
-	    public static void main(String[] args) throws IOException, InterruptedException, JSONException 
-	    {
-	    	ElevatorControl control = new ElevatorControl();
-	    	ServerThread server = new ServerThread(8080);
-	    	server.initElevatorControl(control);
-	    	server.start();
-	    }
+
+    public static void main(String[] args) throws MqttException, IOException {
+    	ElevatorControl control = new ElevatorControl();
+	    MQTT_Client client = new MQTT_Client("elevator control", "tcp://192.168.0.172:1883", control.eventHandler);
+		client.connect();
+		client.subscribe("test");
+	    control.referenceClient(client);
+    }
 }
