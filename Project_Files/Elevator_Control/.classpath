@@ -8,5 +8,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/EasyModbusJava.jar"/>
 	<classpathentry kind="lib" path="lib/java-json.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Bene/eclipse-workspace/Introductory_project/Project_Files/Elevator_Control/lib/org.eclipse.paho.client.mqttv3-1.2.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

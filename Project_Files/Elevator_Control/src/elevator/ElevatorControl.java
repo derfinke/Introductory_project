@@ -1,4 +1,4 @@
-package Control;
+package elevator;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
