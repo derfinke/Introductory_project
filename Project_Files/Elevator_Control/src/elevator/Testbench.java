@@ -9,7 +9,7 @@ public class Testbench {
 		JSONObject json = new JSONObject();
 		json.put("floorSelection", 1);
 		json.put("timestamp", "kurz vor knapp");
-		//Main.mockEvent("", json);
+		//logic.mockEvent("", json);
 	   
 		logic.current_direction = ElevatorLogic.up;
     	logic.current_floor = 3;

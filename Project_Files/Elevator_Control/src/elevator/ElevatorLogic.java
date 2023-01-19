@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.ArrayList;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class ElevatorLogic {
     static final int down = -1, up = 1;
@@ -45,6 +46,10 @@ public class ElevatorLogic {
 			}
 		}
 	};
+	
+	public void mockEvent(String topic, JSONObject payload) throws Exception {
+		eventHandler.messageArrived(topic, new MqttMessage(payload.toString().getBytes()));
+	}
 	
 	
 	private void add_request(List<Integer> list, int floor) {
