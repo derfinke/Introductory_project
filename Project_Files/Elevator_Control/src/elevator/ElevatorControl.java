@@ -57,10 +57,7 @@ public class ElevatorControl {
 		this.mqtt_client.publish("test", "hello");
 	}
 
-	public IMqttMessageListener eventHandler = (topic, msg) -> {
-		String payload = new String(msg.getPayload());
-		System.out.printf("%s: %s%n", topic, payload);
-	};
+	
 
 	public void reset() 
 	{
