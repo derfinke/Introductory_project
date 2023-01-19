@@ -1,16 +1,16 @@
 package elevator;
 
-import org.json.JSONException;
-
-import java.io.IOException;
-
 public class Main {
 	
-	    public static void main(String[] args) throws IOException, InterruptedException, JSONException 
-	    {
-	    	ElevatorControl control = new ElevatorControl();
-	    	ServerThread server = new ServerThread(8080);
-	    	server.initElevatorControl(control);
-	    	server.start();
-	    }
+	private static ElevatorLogic logic;
+	
+	
+
+    public static void main(String[] args) throws Exception {
+    	logic = new ElevatorLogic();
+	    MQTT_Client client = new MQTT_Client("elevator control", "tcp://192.168.0.172:1883", logic.eventHandler);
+		client.connect();
+		client.subscribe("#");
+    	new Testbench(logic);
+    }
 }

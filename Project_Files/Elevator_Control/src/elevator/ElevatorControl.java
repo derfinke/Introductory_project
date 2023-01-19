@@ -5,6 +5,8 @@ import java.net.UnknownHostException;
 
 import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 public class ElevatorControl {
 	
@@ -14,6 +16,7 @@ public class ElevatorControl {
 	private boolean MotorIsReady;
 	private boolean MotorIsOn;
     private boolean ErrorState;
+    private MQTT_Client mqtt_client;
 	
 	private boolean[] readValues = new boolean[5]; 
 
@@ -43,11 +46,18 @@ public class ElevatorControl {
 	}
 
 	public ElevatorControl() throws UnknownHostException, IOException {
-		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",505);
+		/*client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",505);
 		client.Connect();
-		reset();
+		reset();*/
 		
 	}
+
+	public void referenceClient(MQTT_Client mqtt_client) throws MqttException {
+		this.mqtt_client = mqtt_client;
+		this.mqtt_client.publish("test", "hello");
+	}
+
+	
 
 	public void reset() 
 	{
