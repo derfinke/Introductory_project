@@ -17,11 +17,11 @@ public class MQTT_Client {
         this.eventHandler = eventHandler;
         client = new MqttClient(brokerAddress, name);
         options = new MqttConnectOptions();
-        options.setAutomaticReconnect(true);
-        options.setCleanSession(true);
+        options.setAutomaticReconnect(false);
+        options.setCleanSession(false);
         options.setConnectionTimeout(60);
         qos = 0;
-        retained = true;
+        retained = false;
     }
 
     public void connect() throws MqttException {
@@ -34,5 +34,13 @@ public class MQTT_Client {
 
     public void subscribe(String topic) throws MqttException {
         client.subscribe(topic, eventHandler);
+    }
+    
+    public void disconnect() throws MqttException {
+    	client.disconnect();
+    }
+    
+    public void close() throws MqttException {
+    	client.close();
     }
 }
