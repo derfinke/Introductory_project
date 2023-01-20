@@ -5,23 +5,22 @@ import java.util.concurrent.TimeUnit;
 public class Main {
 	
 	private static ElevatorControl control;
-	private static int Direction = -1;
-	private static int wishedFloor = 1;
+	private static int Direction = 0;
+	private static int wishedFloor = 0;
 	private static long time_ms = 0;
 	private static StopWatch myStopWatch;
+	private static ElevatorLogic logic;
 	
     public static void main(String[] args) throws Exception {
     	logic = new ElevatorLogic();
+    	control = new ElevatorControl(logic);
+    	control.reset();
+    	logic.initControl(control);
     	new Testbench(logic);
-    	control = new ElevatorControl();
-    	//Create Logic Object
-    	control.motorV2Down();
-//    	control.motorV2Up();
-    	myStopWatch = new StopWatch();
-    	myStopWatch.start();
     	while(true)
     	{
-    		time_ms =  myStopWatch.getTime(TimeUnit.MILLISECONDS);
+    		wishedFloor = logic.getTargetFloor();
+    		Direction = logic.getCurrentDirection();
     		control.readSensor();
     		//Direction = Logic_Object.getCurrentDirection();
     		if(wishedFloor != 0)
@@ -33,10 +32,7 @@ public class Main {
     		{
     			
     		}
-    		if(time_ms >= 200)
-    		{
-    			wishedFloor = 2;
-    		}
-    		System.out.println(control.getCurrentFloor());
+//    		System.out.println(control.getCurrentFloor());
     	}
     }
+}

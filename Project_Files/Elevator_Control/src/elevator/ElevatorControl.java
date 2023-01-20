@@ -18,6 +18,7 @@ public class ElevatorControl {
 	private boolean MotorIsReady;
 	private boolean MotorIsOn;
     private boolean ErrorState;
+    private ElevatorLogic logic;
     
     private boolean s_l1sl;
     private boolean s_l1r;
@@ -45,6 +46,12 @@ public class ElevatorControl {
     
     private int current_floor;
 	
+	public void mockFloorEvent(String event, int data) throws Exception {
+		JSONObject payload = new JSONObject();
+		payload.put(event, data);
+		logic.mockEvent(event, payload);
+		
+	}
 	private boolean[] readValues = new boolean[5]; 
 
 	
@@ -72,10 +79,11 @@ public class ElevatorControl {
 		ErrorState = errorState;
 	}
 
-	public ElevatorControl() throws UnknownHostException, IOException {
+	public ElevatorControl(ElevatorLogic logic) throws UnknownHostException, IOException {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",506);
 		client.Connect();
 		initCurrentFloor();
+		this.logic = logic;
 		if(current_floor == 0)
 		{
 			reset();
@@ -373,12 +381,12 @@ public class ElevatorControl {
 	    			}
     				if(s_l2sl)
     				{
-    					client.WriteSingleRegister(1, 1);
+    					client.WriteSingleRegister(1, 1);	
     				}
     				if(s_l2r)
-    				{
+    				{	
     					client.WriteSingleRegister(1, 0);
-    					throw new Exception("exception");
+    					mockFloorEvent("floorArrived", 0);
     				}
 	    			
 	    		}
@@ -397,7 +405,7 @@ public class ElevatorControl {
     				if(s_l3r)
     				{
     					client.WriteSingleRegister(1, 0);
-    					throw new Exception("exception");
+    					mockFloorEvent("floorArrived", 0);
     				}
     				
 	    		}
@@ -416,7 +424,7 @@ public class ElevatorControl {
     				if(s_l4r)
     				{
     					client.WriteSingleRegister(1, 0);
-    					throw new Exception("exception");
+    					mockFloorEvent("floorArrived", 0);
     				}
     				
 	    		}
@@ -441,7 +449,7 @@ public class ElevatorControl {
     				if(s_l1r)
     				{
     					client.WriteSingleRegister(1, 0);
-    					throw new Exception("exception");
+    					mockFloorEvent("floorArrived", 0);
     				}
 	    		}
 	    	case 2:
@@ -459,7 +467,7 @@ public class ElevatorControl {
     				if(s_l2r)
     				{
     					client.WriteSingleRegister(1, 0);
-    					throw new Exception("exception");
+    					mockFloorEvent("floorArrived", 0);
     				}
 	    		}
 	    	case 3:
@@ -477,7 +485,7 @@ public class ElevatorControl {
     				if(s_l3r)
     				{
     					client.WriteSingleRegister(1, 0);
-    					throw new Exception("exception");
+    					mockFloorEvent("floorArrived", 0);
     				}
 	    		}
 	    	} 

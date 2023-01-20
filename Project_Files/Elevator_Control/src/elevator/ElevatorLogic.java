@@ -15,6 +15,7 @@ public class ElevatorLogic {
 	int init_direction;
 	int init_floor;
 	boolean init_request;
+	ElevatorControl control;
 	
 	List<Integer> up_requests = new ArrayList<>();
 	List<Integer> down_requests = new ArrayList<>();
@@ -34,12 +35,14 @@ public class ElevatorLogic {
 					break;
 				case "stopButtonUp":
 					floor_request(up, json.getInt("stopButtonUp"));
+					System.out.println("in StopButtonUp Event");
 					break;
 				case "floorSelection":
 					floor_request(current_direction, json.getInt("floorSelection"));
 					break;
 				case "floorArrived":
 					floor_arrived();
+					System.out.println("in floorArrived Event");
 					break;
 			}
 		}
@@ -55,11 +58,11 @@ public class ElevatorLogic {
 	}
 	
 	public void floor_request(int direction, int target_floor) {
-		//current_floor = control.getCurrentFloor();
+		current_floor = control.getCurrentFloor();
 		if (current_direction == none) { // init_request
 			if (direction != none) { // from outside
 				init_direction = direction; // direction after init_floor is reached
-				init_floor = target_floor; // save target_floor
+				init_floor = control.getCurrentFloor(); // save target_floor
 				init = true; //flag to block new requests from changing the next_target_floor until the init_floor is reached
 				init_request = true; //current request is init_request
 			}
@@ -153,13 +156,14 @@ public class ElevatorLogic {
 	}
 	
 	private void update_next_target_floor() {
-		if(init) {
+		if(init) { //!init
 			next_target_floor = init_floor;
 			return;
 		}
 		if (current_direction == up) {
 			if(!up_requests.isEmpty()) {
 				next_target_floor = Collections.min(up_requests); //choose lowest request, that is still above current floor
+				control.motorV2Up();
 			}
 			else if(!down_requests.isEmpty()){ //if no more up_requests check for highest down_request target, that is still above current floor
 				int max_target = 1;
@@ -170,11 +174,13 @@ public class ElevatorLogic {
 					}
 				}
 				next_target_floor = max_target;
+				control.motorV2Up();
 			}
 		}
 		else if(current_direction == down) {
 			if(!down_requests.isEmpty()) {
 				next_target_floor = Collections.max(down_requests); //choose highest request, that is still below current floor
+				control.motorV2Down();
 			}
 			else if(!up_requests.isEmpty()){ //if no more down_requests check for lowest up_request target, that is still below current floor
 				int min_target = 4;
@@ -185,6 +191,7 @@ public class ElevatorLogic {
 					}
 				}
 				next_target_floor = min_target;
+				control.motorV2Down();
 			}
 		}
 	}
@@ -198,5 +205,20 @@ public class ElevatorLogic {
 		};
 		
 		update_next_target_floor();
+	}
+	
+	public int getTargetFloor()
+	{
+		return this.next_target_floor;
+	}
+	
+	public int getCurrentDirection()
+	{
+		return this.current_direction;
+	}
+	
+	public void initControl(ElevatorControl control)
+	{
+		this.control = control;
 	}
 }
