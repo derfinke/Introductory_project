@@ -1,21 +1,42 @@
 package elevator;
-
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.apache.commons.lang3.time.*;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 	
 	private static ElevatorControl control;
+	private static int Direction = -1;
+	private static int wishedFloor = 1;
+	private static long time_ms = 0;
+	private static StopWatch myStopWatch;
 	
-	private static void mockEvent(String topic, String payload) throws Exception {
-		control.eventHandler.messageArrived(topic, new MqttMessage(payload.getBytes()));
-	}
-
     public static void main(String[] args) throws Exception {
+    	
     	control = new ElevatorControl();
-	    MQTT_Client client = new MQTT_Client("elevator control", "tcp://192.168.0.172:1883", control.eventHandler);
-		client.connect();
-		client.subscribe("#");
-	    control.referenceClient(client);
-	    mockEvent("topic", "payload");
+    	//Create Logic Object
+    	control.motorV2Down();
+//    	control.motorV2Up();
+    	myStopWatch = new StopWatch();
+    	myStopWatch.start();
+    	while(true)
+    	{
+    		time_ms =  myStopWatch.getTime(TimeUnit.MILLISECONDS);
+    		control.readSensor();
+    		//Direction = Logic_Object.getCurrentDirection();
+    		if(wishedFloor != 0)
+    		{
+    			control.setCurrentFloor(Direction);
+    			control.ApproachStop(wishedFloor, Direction);
+    		}
+    		else
+    		{
+    			
+    		}
+    		if(time_ms >= 200)
+    		{
+    			wishedFloor = 2;
+    		}
+    		System.out.println(control.getCurrentFloor());
+    	}
     }
 }
