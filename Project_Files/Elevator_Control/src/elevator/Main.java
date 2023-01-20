@@ -11,7 +11,8 @@ public class Main {
 	private static StopWatch myStopWatch;
 	
     public static void main(String[] args) throws Exception {
-    	
+    	logic = new ElevatorLogic();
+    	new Testbench(logic);
     	control = new ElevatorControl();
     	//Create Logic Object
     	control.motorV2Down();
@@ -39,4 +40,3 @@ public class Main {
     		System.out.println(control.getCurrentFloor());
     	}
     }
-}
