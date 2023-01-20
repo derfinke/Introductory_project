@@ -13,32 +13,19 @@ public class Testbench {
 		logic.mockEvent(event, payload);
 		
 	}
-	public Testbench(ElevatorLogic logic) throws Exception {
-		this.logic = logic;
-		JSONObject json = new JSONObject();
-		json.put("floorArrived", "");
-		json.put("timestamp", "kurz vor knapp");
-		//logic.mockEvent("", json);
-	   
-    	logic.current_floor = 1;
-    	mockFloorEvent("floorArrived", 0);
-	    logic.floor_request(ElevatorLogic.down, 3);
-	    /*logic.floor_request(ElevatorLogic.up, 2);
-	    logic.current_floor = 3;
-	    mockFloorEvent("floorArrived", 0);
-    	logic.floor_request(ElevatorLogic.down, 2);
-    	logic.floor_request(logic.current_direction, 1);
-    	logic.current_floor = 2;
-    	mockFloorEvent("floorArrived", 0);
-    	logic.current_floor = 1;
-    	mockFloorEvent("floorArrived", 0);
-    	logic.current_floor = 2;
-    	mockFloorEvent("floorArrived", 0);
-    	logic.floor_request(ElevatorLogic.down, 4);*/
-    	
-	    
-	    
-	    List<Integer> down_requests = logic.down_requests;
+	
+	
+	public void printElevatorInfo(int printNumber) {
+		for(int i=0;i<15;i++) {
+			System.out.printf("__");
+		}
+		System.out.printf("\nTESTOUTPUT: " + printNumber + "\n");
+		for(int i=0;i<15;i++) {
+			System.out.printf("__");
+		}
+		System.out.printf("\n");
+		
+		List<Integer> down_requests = logic.down_requests;
 	    System.out.printf("down_requests:\n");
 	    for(int i = 0; i < down_requests.size(); i++) {
 	    	System.out.printf("down_request: %d\n", down_requests.get(i));
@@ -61,5 +48,34 @@ public class Testbench {
 	    
 	    System.out.printf("next target: %d\n", logic.next_target_floor);
 	    System.out.printf("direction: %d\n", logic.current_direction);
+	}
+	
+	
+	
+	
+	public Testbench(ElevatorLogic logic) throws Exception {
+		this.logic = logic;
+		JSONObject json = new JSONObject();
+		json.put("floorArrived", "");
+		json.put("timestamp", "kurz vor knapp");
+		//logic.mockEvent("", json);
+	   
+		//1 to 4 upwards with halt in 3(up) request in 2(down)
+    	logic.current_floor = 1;
+    	logic.current_direction = logic.up;
+    	printElevatorInfo(1);
+	    logic.floor_request(ElevatorLogic.down, 2);
+	    logic.floor_request(ElevatorLogic.up, 3);
+	    printElevatorInfo(2);
+	    logic.current_floor = 3;
+	    logic.floor_request(ElevatorLogic.up, 2);
+	    printElevatorInfo(3);
+	    mockFloorEvent("floorArrived", 3);			//get current floor from nicos function(name?)
+	    logic.current_floor = 4;
+    	
+	    printElevatorInfo(4);
+	    
+	    
+	    
 	}
 }
