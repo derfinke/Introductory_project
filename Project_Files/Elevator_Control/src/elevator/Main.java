@@ -17,10 +17,9 @@ public class Main {
     	ElevatorControl control  = new ElevatorControl(logic);
     	control.reset();
     	logic.initControl(control);
-    	new Testbench(logic);  
-    	control.start();
-    	MQTT_Client subscriber = new MQTT_Client("C2", "tcp://ea-pc165.ei.htwg-konstanz.de:1883");
+    	MQTT_Client subscriber = new MQTT_Client("C2", "tcp://ea-pc165.ei.htwg-konstanz.de:1883", logic, control);
     	subscriber.connect();
     	subscriber.subscribe("/22WS-SysArch/C2/");
+    	control.start();
     }
 }

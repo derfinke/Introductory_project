@@ -22,38 +22,39 @@ public class ElevatorLogic {
 	List<Integer> up_wait = new ArrayList<>();
 	List<Integer> down_wait = new ArrayList<>();
 	
-	public IMqttMessageListener LogicEventHandler = (topic, msg) -> {
-		String payload = new String(msg.getPayload());
-		JSONObject json = new JSONObject(payload);
-		String[] keys = JSONObject.getNames(json);
-		//String timeStamp = json.getString("timestamp");
-		
-		for (int i=0; i<keys.length; i++) {
-			switch(keys[i]) {
-				case "stopButtonDown":
-					floor_request(down, json.getInt("stopButtonDown"));
-					break;
-				case "stopButtonUp":
-					floor_request(up, json.getInt("stopButtonUp"));
-					System.out.println("in StopButtonUp Event");
-					break;
-				case "floorSelection":
-					floor_request(getCurrentDirection(), json.getInt("floorSelection"));
-					break;
-				case "floorArrived":
-					floor_arrived();
-					System.out.println("in floorArrived Event");
-					break;
-			}
+	public void FloorEventHandler(String key, int floor){
+		switch(key) {
+			case "stopButtonDown":
+				floor_request(down, floor);
+				break;
+			case "stopButtonUp":
+				floor_request(up, floor);
+				System.out.println("in StopButtonUp Event");
+				break;
+			case "floorSelection":
+				floor_request(getCurrentDirection(), floor);
+				break;
+			case "floorArrived":
+				floor_arrived();
+				System.out.println("in floorArrived Event");
+				break;
 		}
-	};
-
-
-	
-	public void mockEvent(String topic, JSONObject payload) throws Exception {
-		LogicEventHandler.messageArrived(topic, new MqttMessage(payload.toString().getBytes()));
 	}
 	
+	public void DoorEventHandler(String doorCommand){
+		switch(doorCommand)
+		{
+			case "open":
+				control.openDoor();
+				break;
+			case "close":
+				control.closeDoor();
+				break;
+			case "stop":
+				control.stopDoor();
+				break;
+		}
+	}
 	
 	private void add_request(List<Integer> list, int floor) {
 		if (!list.contains(floor)) list.add(floor);

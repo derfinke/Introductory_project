@@ -6,6 +6,9 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.json.JSONObject;
 
+import elevator.ElevatorControl;
+import elevator.ElevatorLogic;
+
 
 public class MQTT_Client {
     private final MqttClient client;
@@ -13,8 +16,10 @@ public class MQTT_Client {
     private final int qos;
     private final boolean retained;
     private static final String PASSWORD = "DF7";
+    private ElevatorLogic logic;
+    private ElevatorControl control;
 
-    public MQTT_Client(String name, String brokerAddress) throws MqttException {
+    public MQTT_Client(String name, String brokerAddress, ElevatorLogic logic, ElevatorControl control) throws MqttException {
         client = new MqttClient(brokerAddress, name);
         options = new MqttConnectOptions();
         options.setUserName("C2");
@@ -23,6 +28,8 @@ public class MQTT_Client {
         options.setConnectionTimeout(60);
         qos = 0;
         retained = true;
+        this.logic = logic;
+        this.control = control;
     }
 
     public void connect() throws MqttException {
@@ -49,7 +56,7 @@ public class MQTT_Client {
 		String payload = new String(msg.getPayload());
 		JSONObject json = new JSONObject(payload);
 		String[] keys = JSONObject.getNames(json);
-		String timeStamp = json.getString("timestamp");
+//		String timeStamp = json.getString("timestamp");
 		int floor;
 		String doorState;
 		boolean resetElevator;
@@ -63,45 +70,46 @@ public class MQTT_Client {
 					//call function in ElevatorLogic pass key
 					System.out.println("stopButtoDown Event:");
 					System.out.println(floor);
-					System.out.println(timeStamp);
+					logic.FloorEventHandler(keys[i], floor);
 					break;
 				case "stopButtonUp":
 					floor = json.getInt(keys[i]);
 					//floor_request(up, json.getInt("stopButtonUp"));
 					System.out.println("in StopButtonUp Event");
 					System.out.println(floor);
+					logic.FloorEventHandler(keys[i], floor);
 					break;
 				case "floorSelection":
 					floor = json.getInt(keys[i]);
 					System.out.println("floorSelection Event");
 					//floor_request(getCurrentDirection(), json.getInt("floorSelection"));
 					System.out.println(floor);
+					logic.FloorEventHandler(keys[i], floor);
 					break;
 				case "doorButton":
 					doorState = json.getString(keys[i]);
 					System.out.println("doorButton Event");
 					System.out.println(doorState);
+					logic.DoorEventHandler(doorState);
 					break;
 				case "reset":
 					resetElevator = json.getBoolean(keys[i]);
 					System.out.println("reset Event");
 					System.out.println(resetElevator);
+					control.reset();
 					break;
 				case "manualDoor":
 					doorState = json.getString(keys[i]);
 					System.out.println("manualDoor Event");
 					System.out.println(doorState);
+					logic.DoorEventHandler(doorState);
 					break;
 				case "emergencyStop":
 					emergencyStop = json.getBoolean(keys[i]);
 					System.out.println("emergencyStop Event");
 					System.out.println(emergencyStop);
+					control.emergencyStop();
 					break;
-					
-//				case "floorArrived":
-//					floor_arrived();
-//					System.out.println("in floorArrived Event");
-//					break;
 			}
 		}
 	};

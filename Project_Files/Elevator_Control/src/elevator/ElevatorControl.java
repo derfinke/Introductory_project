@@ -13,11 +13,11 @@ import org.apache.commons.lang3.time.*;
 public class ElevatorControl extends Thread{
 	
 	private ModbusClient client;
-	private boolean DoorIsOpen;
-	private boolean DoorIsClosed;
-	private boolean MotorIsReady;
-	private boolean MotorIsOn;
-    private boolean ErrorState;
+//	private boolean DoorIsOpen;
+//	private boolean DoorIsClosed;
+//	private boolean MotorIsReady;
+//	private boolean MotorIsOn;
+//    private boolean ErrorState;
     private ElevatorLogic logic;
     
     private boolean s_l1sl;
@@ -62,37 +62,36 @@ public class ElevatorControl extends Thread{
 		
 	}
 	
-	public void mockFloorEvent(String event, int data) throws Exception {
-		JSONObject payload = new JSONObject();
-		payload.put(event, data);
-		logic.mockEvent(event, payload);
-		
-	}
+//	public void mockFloorEvent(String event, int data) throws Exception {
+//		JSONObject payload = new JSONObject();
+//		payload.put(event, data);
+//		logic.mockEvent(event, payload);
+//		
+//	}
 	private boolean[] readValues = new boolean[5]; 
 
 	
 	public boolean getDoorIsOpen() {
-		return DoorIsOpen;
+		return s_dopened;
 	}
 
 	public void setDoorIsOpen(boolean doorIsOpen) {
-		DoorIsOpen = doorIsOpen;
+		s_dopened = doorIsOpen;
 	}
 
 	public boolean getDoorIsClosed() {
-		return DoorIsClosed;
+		return s_dclosed;
 	}
 
 	public void setDoorIsClosed(boolean doorIsClosed) {
-		DoorIsClosed = doorIsClosed;
+		s_dclosed = doorIsClosed;
 	}
 
 	public boolean getErrorState() {
-		return ErrorState;
+		return m_error;
 	}
 
 	public void setErrorState(boolean errorState) {
-		ErrorState = errorState;
 	}
 
 	@Override
@@ -146,13 +145,11 @@ public class ElevatorControl extends Thread{
 		}
 	}
 	
-	public void openDoor() 
+	synchronized public void openDoor() 
 	{
 		try 
-		{
-			readSensor();
-			
-			if(DoorIsClosed && MotorIsReady && !MotorIsOn)
+		{	
+			if(s_dclosed && m_ready && !m_on)
 			{
 				client.WriteSingleCoil(12, false); //set register to close door to false
 				client.WriteSingleCoil(13, true);  //set register to open door to true
@@ -166,13 +163,11 @@ public class ElevatorControl extends Thread{
 		}
 	}
 	
-	public void closeDoor()
+	synchronized public void closeDoor()
 	{
 		try 
-		{
-			readSensor();
-			
-			if(DoorIsOpen && !MotorIsReady && !MotorIsOn)
+		{	
+			if(s_dopened && !m_ready && !m_on)
 			{
 				client.WriteSingleCoil(13, false); //set register to open door to false
 				client.WriteSingleCoil(12, true);  //set register to close door to true
@@ -185,6 +180,50 @@ public class ElevatorControl extends Thread{
 		} catch (ModbusException | IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void stopDoor()
+	{
+		try 
+		{
+			boolean[] doorStatus = client.ReadCoils(12, 2);
+			if(doorStatus[0] == true)
+			{
+				client.WriteSingleCoil(12, false);  //set register to close door to true
+			}
+			else if(doorStatus[1] == true)
+			{
+				client.WriteSingleCoil(13, false);
+			}
+			else
+			{
+				System.out.println("Door isn't moving at the moment");
+			}
+
+		} catch (ModbusException | IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void emergencyStop()
+	{
+
+        try {
+        	//set velocity to zero
+            client.WriteSingleRegister(1, 0);
+			client.WriteSingleCoil(8, false);
+	        client.WriteSingleCoil(9, false);
+	        client.WriteSingleCoil(10, false);
+	        client.WriteSingleCoil(11, false);
+
+	        // stop door opening / closing
+	        client.WriteSingleCoil(12, false);
+	        client.WriteSingleCoil(13, false);
+		} catch (ModbusException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 	
 	synchronized public void readSensor()
@@ -410,7 +449,7 @@ public class ElevatorControl extends Thread{
     				else if(s_l2r && !arrived_floor_flag)
     				{	
     					client.WriteSingleRegister(1, 0);
-    					mockFloorEvent("floorArrived", 0);
+    					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
     				}
 	    			
@@ -431,7 +470,7 @@ public class ElevatorControl extends Thread{
     				else if(s_l3r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
-    					mockFloorEvent("floorArrived", 0);
+    					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
     				}
     				
@@ -452,7 +491,7 @@ public class ElevatorControl extends Thread{
     				else if(s_l4r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
-    					mockFloorEvent("floorArrived", 0);
+    					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
     				}
     				
@@ -479,7 +518,7 @@ public class ElevatorControl extends Thread{
     				else if(s_l1r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
-    					mockFloorEvent("floorArrived", 0);
+    					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
     				}
 	    		}
@@ -499,7 +538,7 @@ public class ElevatorControl extends Thread{
     				else if(s_l2r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
-    					mockFloorEvent("floorArrived", 0);
+    					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
     				}
 	    		}
@@ -519,7 +558,7 @@ public class ElevatorControl extends Thread{
     				else if(s_l3r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
-    					mockFloorEvent("floorArrived", 0);
+    					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
     				}
 	    		}
