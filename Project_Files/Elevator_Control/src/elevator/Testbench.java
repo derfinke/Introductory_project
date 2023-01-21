@@ -64,14 +64,15 @@ public class Testbench {
 //    	logic.setCurrentFloor(1);
 //    	logic.current_direction = logic.up;
     	printElevatorInfo(1);
+    	mockFloorEvent("stopButtonDown", 4);
     	mockFloorEvent("stopButtonUp", 2);
-    	mockFloorEvent("stopButtonUp", 3);
+    	
 //	    logic.floor_request(ElevatorLogic.up, 2);
 //	    logic.floor_request(ElevatorLogic.up, 3);
 	    printElevatorInfo(2);
 //	    logic.current_floor = 3;
 //	    logic.floor_request(ElevatorLogic.up, 4);
-	    mockFloorEvent("stopButtonUp", 4);
+	    mockFloorEvent("stopButtonDown", 1);
 	    printElevatorInfo(3);
 //	    mockFloorEvent("floorArrived", 3);			//get current floor from nicos function(name?)
 //	    logic.current_floor = 4;

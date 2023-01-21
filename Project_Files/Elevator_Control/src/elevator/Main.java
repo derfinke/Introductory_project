@@ -12,9 +12,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
     	ElevatorLogic logic = new ElevatorLogic();
     	ElevatorControl control  = new ElevatorControl(logic);
-    	control.reset();
+    	//control.reset();
     	logic.initControl(control);
-    	new Testbench(logic);  
     	control.start();
+    	new Testbench(logic);  
     }
 }
