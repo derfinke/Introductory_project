@@ -9,6 +9,9 @@ import org.json.JSONObject;
 import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
 
+import java.util.concurrent.locks.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
 import org.apache.commons.lang3.time.*;
 public class ElevatorControl extends Thread{
 	
@@ -48,6 +51,8 @@ public class ElevatorControl extends Thread{
     private boolean arrived_floor_flag;
 	private int Direction = 0;
 	private int wishedFloor = 0;
+	
+	private ReentrantLock lock = new ReentrantLock(true);
 	
 	public ElevatorControl(ElevatorLogic logic) throws UnknownHostException, IOException {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",506);
@@ -145,14 +150,16 @@ public class ElevatorControl extends Thread{
 		}
 	}
 	
-	synchronized public void openDoor() 
+	public void openDoor() 
 	{
 		try 
 		{	
 			if(s_dclosed && m_ready && !m_on)
 			{
+				lock.lock();
 				client.WriteSingleCoil(12, false); //set register to close door to false
 				client.WriteSingleCoil(13, true);  //set register to open door to true
+				lock.unlock();
 			}
 			else
 			{
@@ -163,19 +170,23 @@ public class ElevatorControl extends Thread{
 		}
 	}
 	
-	synchronized public void closeDoor()
+	public void closeDoor()
 	{
 		try 
 		{	
+			
 			if(s_dopened && !m_ready && !m_on)
 			{
+				lock.lock();
 				client.WriteSingleCoil(13, false); //set register to open door to false
 				client.WriteSingleCoil(12, true);  //set register to close door to true
+				lock.unlock();
 			}
 			else
 			{
 				System.out.println("Door cant be closed at the moment");
 			}
+			lock.unlock();
 
 		} catch (ModbusException | IOException e) {
 			e.printStackTrace();
@@ -189,17 +200,20 @@ public class ElevatorControl extends Thread{
 			boolean[] doorStatus = client.ReadCoils(12, 2);
 			if(doorStatus[0] == true)
 			{
+				lock.lock();
 				client.WriteSingleCoil(12, false);  //set register to close door to true
+				lock.unlock();
 			}
 			else if(doorStatus[1] == true)
 			{
+				lock.lock();
 				client.WriteSingleCoil(13, false);
+				lock.unlock();
 			}
 			else
 			{
 				System.out.println("Door isn't moving at the moment");
 			}
-
 		} catch (ModbusException | IOException e) {
 			e.printStackTrace();
 		}
@@ -209,6 +223,7 @@ public class ElevatorControl extends Thread{
 	{
 
         try {
+        	lock.lock();
         	//set velocity to zero
             client.WriteSingleRegister(1, 0);
 			client.WriteSingleCoil(8, false);
@@ -219,6 +234,7 @@ public class ElevatorControl extends Thread{
 	        // stop door opening / closing
 	        client.WriteSingleCoil(12, false);
 	        client.WriteSingleCoil(13, false);
+	        lock.unlock();
 		} catch (ModbusException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -226,19 +242,21 @@ public class ElevatorControl extends Thread{
 
 	}
 	
-	synchronized public void readSensor()
+	public void readSensor()
 	{
         boolean[] sensorValuesFloor = new boolean[27];
         boolean[] sensorValuesDoorAndMotor = new boolean[5];
 		try 
 		{
+			lock.lock();
 			sensorValuesFloor = client.ReadDiscreteInputs(1, 27); //read values from register 10.0 - 10.4
 			sensorValuesDoorAndMotor = client.ReadDiscreteInputs(80, 5);
+			lock.unlock();
 			
 		} catch (ModbusException | IOException e) {
 			e.printStackTrace();
 		}
-		
+		lock.lock();
         s_l1sl = sensorValuesFloor[0];
         s_l1r = sensorValuesFloor[1];
         s_l1su = sensorValuesFloor[2];
@@ -262,7 +280,7 @@ public class ElevatorControl extends Thread{
         m_ready = sensorValuesDoorAndMotor[2];
         m_on = sensorValuesDoorAndMotor[3];
         m_error = sensorValuesDoorAndMotor[4];
-		
+        lock.unlock();
 	}
 	
     public void printSensorValues(){
@@ -291,17 +309,21 @@ public class ElevatorControl extends Thread{
                 " | m_error = " + m_error);
     }
 	
-    synchronized public void motorV2Up() {
+    public void motorV2Up() {
     	try {
+    		lock.lock();
 			client.WriteSingleCoil(11, true);
+			lock.unlock();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
     }
     
-    synchronized public void motorV2Down() {
+    public void motorV2Down() {
     	try {
+    		lock.lock();
     		client.WriteSingleCoil(8, true);
+    		lock.unlock();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -361,7 +383,7 @@ public class ElevatorControl extends Thread{
     }
     
     synchronized public int getCurrentFloor()
-    {
+    {	
     	return current_floor;
     }
     
@@ -394,6 +416,7 @@ public class ElevatorControl extends Thread{
     
     public void setCurrentFloor(int Direction)
     {
+    	lock.lock();
     	if(Direction == 1)
     	{
     		if(s_l2al){
@@ -423,9 +446,10 @@ public class ElevatorControl extends Thread{
     			current_floor = 1;
     		}
     	}
+    	lock.unlock();
     }
     
-    synchronized public void ApproachStop(int stop, int Direction) throws Exception
+    public void ApproachStop(int stop, int Direction) throws Exception
     {
     	//long time_ms = 0;
     	//StopWatch myStopWatch = new StopWatch();
@@ -434,6 +458,7 @@ public class ElevatorControl extends Thread{
 	    	switch(stop)
 	    	{
 	    	case 2:
+	    		lock.lock();
 	    		if(current_floor == 2)
 	    		{
 	    			if(s_l2al)
@@ -452,9 +477,11 @@ public class ElevatorControl extends Thread{
     					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
     				}
-	    			
 	    		}
+	    		lock.unlock();
+	    		break;
 	    	case 3:
+	    		lock.lock();
 	    		if(current_floor == 3)
 	    		{
 	    			if(s_l3al)
@@ -472,10 +499,12 @@ public class ElevatorControl extends Thread{
     					client.WriteSingleRegister(1, 0);
     					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
-    				}
-    				
+    				}   				
 	    		}
+	    		lock.unlock();
+	    		break;
 	    	case 4:
+	    		lock.lock();
 	    		if(current_floor == 4)
 	    		{
 	    			if(s_l4al)
@@ -493,9 +522,10 @@ public class ElevatorControl extends Thread{
     					client.WriteSingleRegister(1, 0);
     					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
-    				}
-    				
+    				}	
 	    		}
+	    		lock.unlock();
+	    		break;
 	    	}
 		}
 		else
@@ -503,6 +533,7 @@ public class ElevatorControl extends Thread{
 	    	switch(stop)
 	    	{
 	    	case 1:
+	    		lock.lock();
 	    		if(current_floor == 1)
 	    		{
 	    			if(s_l1au)
@@ -522,7 +553,10 @@ public class ElevatorControl extends Thread{
     					arrived_floor_flag = true;
     				}
 	    		}
+	    		lock.unlock();
+	    		break;
 	    	case 2:
+	    		lock.lock();
 	    		if(current_floor == 2)
 	    		{
 	    			if(s_l2au)
@@ -542,7 +576,10 @@ public class ElevatorControl extends Thread{
     					arrived_floor_flag = true;
     				}
 	    		}
+	    		lock.unlock();
+	    		break;
 	    	case 3:
+	    		lock.lock();
 	    		if(current_floor == 3)
 	    		{
 	    			if(s_l3au)
@@ -562,6 +599,8 @@ public class ElevatorControl extends Thread{
     					arrived_floor_flag = true;
     				}
 	    		}
+	    		lock.unlock();
+	    		break;
 	    	} 
 		}
      }
