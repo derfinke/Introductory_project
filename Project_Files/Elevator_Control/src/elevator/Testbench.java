@@ -46,8 +46,8 @@ public class Testbench {
 	    	System.out.printf("up_wait: %d\n", up_wait.get(i));
 	    }
 	    
-	    System.out.printf("next target: %d\n", logic.next_target_floor);
-	    System.out.printf("direction: %d\n", logic.current_direction);
+	    System.out.printf("next target: %d\n", logic.getTargetFloor());
+	    System.out.printf("direction: %d\n", logic.getCurrentDirection());
 	}
 	
 	
@@ -61,7 +61,7 @@ public class Testbench {
 		//logic.mockEvent("", json);
 	   
 		//1 to 4 upwards with halt in 3(up) request in 2(down)
-//    	logic.current_floor = 1;
+    	logic.setCurrentFloor(1);
 //    	logic.current_direction = logic.up;
     	printElevatorInfo(1);
     	mockFloorEvent("stopButtonUp", 2);
