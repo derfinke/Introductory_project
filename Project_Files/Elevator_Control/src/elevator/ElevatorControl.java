@@ -49,6 +49,19 @@ public class ElevatorControl extends Thread{
 	private int Direction = 0;
 	private int wishedFloor = 0;
 	
+	public ElevatorControl(ElevatorLogic logic) throws UnknownHostException, IOException {
+		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",506);
+		client.Connect();
+		initCurrentFloor();
+		this.logic = logic;
+		if(current_floor == 0)
+		{
+			reset();
+			current_floor = 1;
+		}
+		
+	}
+	
 	public void mockFloorEvent(String event, int data) throws Exception {
 		JSONObject payload = new JSONObject();
 		payload.put(event, data);
@@ -107,19 +120,7 @@ public class ElevatorControl extends Thread{
 //    		System.out.println(control.getCurrentFloor());
     	}
 	}
-	
-	public ElevatorControl(ElevatorLogic logic) throws UnknownHostException, IOException {
-		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",506);
-		client.Connect();
-		initCurrentFloor();
-		this.logic = logic;
-		if(current_floor == 0)
-		{
-			reset();
-			current_floor = 1;
-		}
-		
-	}
+
 
 	public void reset() 
 	{
@@ -350,13 +351,6 @@ public class ElevatorControl extends Thread{
     	{
     		current_floor = 0;
     	}
-    	
-		try {
-    		json.put("floorArrived", "");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		//TODO: add mockevent to call MQTT Eventhandler
     }
     
     public void setCurrentFloor(int Direction)

@@ -61,7 +61,7 @@ public class Testbench {
 		//logic.mockEvent("", json);
 	   
 		//1 to 4 upwards with halt in 3(up) request in 2(down)
-    	logic.setCurrentFloor(1);
+//    	logic.setCurrentFloor(1);
 //    	logic.current_direction = logic.up;
     	printElevatorInfo(1);
     	mockFloorEvent("stopButtonUp", 2);
