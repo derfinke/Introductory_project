@@ -68,10 +68,10 @@ public class ElevatorLogic {
 				first_request = true; //flag to block new requests from changing the next_target_floor until the init_floor is reached
 				init_request = true; //current request is init_request
 			}
-			if (target_floor - getCurrentFloor() > 0) {
+			if (target_floor - current_floor > 0) {
 				direction = up;
 			}
-			else if (target_floor - getCurrentFloor() < 0) {
+			else if (target_floor - current_floor < 0) {
 				direction = down;
 			}
 			setCurrentDirection(direction);
@@ -84,7 +84,7 @@ public class ElevatorLogic {
 				add_request(up_requests, target_floor);
 			}
 		}
-		else if (direction * (target_floor - getCurrentFloor()) > 0){ //
+		else if (direction * (target_floor - current_floor) > 0){ //
 			if (getCurrentDirection() == up) {
 				add_request(up_requests, target_floor);
 			}
@@ -108,10 +108,10 @@ public class ElevatorLogic {
 	
 	private void delete_complied_requests() {
 		if (getCurrentDirection() == up) {
-			up_requests.removeIf(floor -> floor.equals(getCurrentFloor()));
+			up_requests.removeIf(floor -> floor.equals(current_floor));
 		}
 		else if (getCurrentDirection() == down) {
-			down_requests.removeIf(floor -> floor.equals(getCurrentFloor()));
+			down_requests.removeIf(floor -> floor.equals(current_floor));
 		}
 	}
 	
@@ -126,21 +126,21 @@ public class ElevatorLogic {
 			setCurrentDirection(none);
 		}
 		if (getCurrentDirection() == down) {
-			if (getCurrentFloor() == 1) { // if elevator reached end of direction
+			if (current_floor == 1) { // if elevator reached end of direction
 				setCurrentDirection(up);
 			}
 			if (down_requests.isEmpty() && !up_requests.isEmpty()) {
-				if (Collections.min(up_requests) > getCurrentFloor()) { // if no more down_requests and no reachable up_request
+				if (Collections.min(up_requests) > current_floor) { // if no more down_requests and no reachable up_request
 					setCurrentDirection(up);
 				}
 			}
 		}
 		else if (getCurrentDirection() == up) {
-			if (getCurrentFloor() == 4) { // if elevator reached end of direction
+			if (current_floor == 4) { // if elevator reached end of direction
 				setCurrentDirection(down);
 			}
 			if (up_requests.isEmpty() && !down_requests.isEmpty()) {
-				if (Collections.max(down_requests) < getCurrentFloor()) { // if no more up_requests and no reachable down_request
+				if (Collections.max(down_requests) < current_floor) { // if no more up_requests and no reachable down_request
 					setCurrentDirection(down);
 				}
 			}
@@ -184,7 +184,7 @@ public class ElevatorLogic {
 				int max_target = 1;
 				for (int i=0; i< down_requests.size(); i++) {
 					int dr = down_requests.get(i);
-					if (dr > getCurrentFloor() && dr > max_target) {
+					if (dr > current_floor && dr > max_target) {
 						max_target = dr;
 					}
 				}
@@ -203,7 +203,7 @@ public class ElevatorLogic {
 				int min_target = 4;
 				for (int i=0; i< up_requests.size(); i++) {
 					int ur = up_requests.get(i);
-					if (ur < getCurrentFloor() && ur < min_target) {
+					if (ur < current_floor && ur < min_target) {
 						min_target = ur;
 					}
 				}
@@ -234,9 +234,6 @@ public class ElevatorLogic {
 		return this.next_target_floor;
 	}
 	
-	public int getCurrentFloor() {
-		return this.current_floor;
-	}
 	
 	public void setCurrentFloor(int floor) {
 		this.current_floor = floor;

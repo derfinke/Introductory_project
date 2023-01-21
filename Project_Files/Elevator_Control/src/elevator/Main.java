@@ -12,9 +12,15 @@ public class Main {
     public static void main(String[] args) throws Exception {
     	ElevatorLogic logic = new ElevatorLogic();
     	ElevatorControl control  = new ElevatorControl(logic);
-    	//control.reset();
+    	control.reset();
     	logic.initControl(control);
+    	
+    	//Testbench testbench = new Testbench(logic);
     	control.start();
-    	new Testbench(logic);  
+    	MQTT_Client client = new MQTT_Client("elevator", "tcp://192.168.0.172:1883", logic.eventHandler);
+    	client.connect();
+    	client.subscribe("#");
+    	//testbench.start();
+    	
     }
 }
