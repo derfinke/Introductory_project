@@ -10,7 +10,7 @@ import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
 
 import org.apache.commons.lang3.time.*;
-public class ElevatorControl {
+public class ElevatorControl extends Thread{
 	
 	private ModbusClient client;
 	private boolean DoorIsOpen;
@@ -45,6 +45,9 @@ public class ElevatorControl {
     private boolean m_error;
     
     private int current_floor;
+    private boolean arrived_floor_flag;
+	private int Direction = 0;
+	private int wishedFloor = 0;
 	
 	public void mockFloorEvent(String event, int data) throws Exception {
 		JSONObject payload = new JSONObject();
@@ -79,6 +82,32 @@ public class ElevatorControl {
 		ErrorState = errorState;
 	}
 
+	@Override
+	public void run()
+	{
+    	while(true)
+    	{
+    		wishedFloor = logic.getTargetFloor();
+    		Direction = logic.getCurrentDirection();
+    		readSensor();
+    		//Direction = Logic_Object.getCurrentDirection();
+    		if(wishedFloor != 0)
+    		{
+    			setCurrentFloor(Direction);
+    			try {
+					ApproachStop(wishedFloor, Direction);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+    		}
+    		else
+    		{
+    			
+    		}
+//    		System.out.println(control.getCurrentFloor());
+    	}
+	}
+	
 	public ElevatorControl(ElevatorLogic logic) throws UnknownHostException, IOException {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",506);
 		client.Connect();
@@ -376,17 +405,19 @@ public class ElevatorControl {
 	    		{
 	    			if(s_l2al)
 	    			{
+	    				arrived_floor_flag = false;
 	    				motorV2UpStop();
 	    				client.WriteSingleRegister(1, 4);
 	    			}
-    				if(s_l2sl)
+	    			else if(s_l2sl)
     				{
     					client.WriteSingleRegister(1, 1);	
     				}
-    				if(s_l2r)
+    				else if(s_l2r && !arrived_floor_flag)
     				{	
     					client.WriteSingleRegister(1, 0);
     					mockFloorEvent("floorArrived", 0);
+    					arrived_floor_flag = true;
     				}
 	    			
 	    		}
@@ -395,17 +426,19 @@ public class ElevatorControl {
 	    		{
 	    			if(s_l3al)
 	    			{
+	    				arrived_floor_flag = false;
 	    				motorV2UpStop();
 	    				client.WriteSingleRegister(1, 4);
 	    			}
-    				if(s_l3sl)
+	    			else if(s_l3sl)
     				{
     					client.WriteSingleRegister(1, 1);
     				}
-    				if(s_l3r)
+    				else if(s_l3r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
     					mockFloorEvent("floorArrived", 0);
+    					arrived_floor_flag = true;
     				}
     				
 	    		}
@@ -414,17 +447,19 @@ public class ElevatorControl {
 	    		{
 	    			if(s_l4al)
 	    			{
+	    				arrived_floor_flag = false;
 	    				motorV2UpStop();
 	    				client.WriteSingleRegister(1, 4);
 	    			}
-    				if(s_l4sl)
+	    			else if(s_l4sl)
     				{
     					client.WriteSingleRegister(1, 1);
     				}
-    				if(s_l4r)
+    				else if(s_l4r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
     					mockFloorEvent("floorArrived", 0);
+    					arrived_floor_flag = true;
     				}
     				
 	    		}
@@ -439,17 +474,19 @@ public class ElevatorControl {
 	    		{
 	    			if(s_l1au)
 	    			{
+	    				arrived_floor_flag = false;
 	    				motorV2DownStop();
 	    				client.WriteSingleRegister(1, -4);
 	    			}
-    				if(s_l1su)
+	    			else if(s_l1su)
     				{
     					client.WriteSingleRegister(1, -1);
     				}
-    				if(s_l1r)
+    				else if(s_l1r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
     					mockFloorEvent("floorArrived", 0);
+    					arrived_floor_flag = true;
     				}
 	    		}
 	    	case 2:
@@ -457,17 +494,19 @@ public class ElevatorControl {
 	    		{
 	    			if(s_l2au)
 	    			{
+	    				arrived_floor_flag = false;
 	    				motorV2DownStop();
 	    				client.WriteSingleRegister(1, -4);
 	    			}
-    				if(s_l2su)
+	    			else if(s_l2su)
     				{
     					client.WriteSingleRegister(1, -1);
     				}
-    				if(s_l2r)
+    				else if(s_l2r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
     					mockFloorEvent("floorArrived", 0);
+    					arrived_floor_flag = true;
     				}
 	    		}
 	    	case 3:
@@ -475,17 +514,19 @@ public class ElevatorControl {
 	    		{
 	    			if(s_l3au)
 	    			{
+	    				arrived_floor_flag = false;
 	    				motorV2DownStop();
 	    				client.WriteSingleRegister(1, -4);
 	    			}
-    				if(s_l3su)
+	    			else if(s_l3su)
     				{
     					client.WriteSingleRegister(1, -1);
     				}
-    				if(s_l3r)
+    				else if(s_l3r && !arrived_floor_flag)
     				{
     					client.WriteSingleRegister(1, 0);
     					mockFloorEvent("floorArrived", 0);
+    					arrived_floor_flag = true;
     				}
 	    		}
 	    	} 

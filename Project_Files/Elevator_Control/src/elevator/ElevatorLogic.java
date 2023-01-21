@@ -156,7 +156,7 @@ public class ElevatorLogic {
 	}
 	
 	private void update_next_target_floor() {
-		if(init) { //!init
+		if(!init) { //!init
 			next_target_floor = init_floor;
 			return;
 		}
