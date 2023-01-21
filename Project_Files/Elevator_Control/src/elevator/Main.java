@@ -1,5 +1,8 @@
 package elevator;
 import org.apache.commons.lang3.time.*;
+
+import mqtt.MQTT_Client;
+
 import java.util.concurrent.TimeUnit;
 
 
@@ -16,5 +19,8 @@ public class Main {
     	logic.initControl(control);
     	new Testbench(logic);  
     	control.start();
+    	MQTT_Client subscriber = new MQTT_Client("C2", "tcp://ea-pc165.ei.htwg-konstanz.de:1883");
+    	subscriber.connect();
+    	subscriber.subscribe("/22WS-SysArch/C2/");
     }
 }

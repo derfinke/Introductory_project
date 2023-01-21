@@ -22,7 +22,7 @@ public class ElevatorLogic {
 	List<Integer> up_wait = new ArrayList<>();
 	List<Integer> down_wait = new ArrayList<>();
 	
-	public IMqttMessageListener eventHandler = (topic, msg) -> {
+	public IMqttMessageListener LogicEventHandler = (topic, msg) -> {
 		String payload = new String(msg.getPayload());
 		JSONObject json = new JSONObject(payload);
 		String[] keys = JSONObject.getNames(json);
@@ -51,7 +51,7 @@ public class ElevatorLogic {
 
 	
 	public void mockEvent(String topic, JSONObject payload) throws Exception {
-		eventHandler.messageArrived(topic, new MqttMessage(payload.toString().getBytes()));
+		LogicEventHandler.messageArrived(topic, new MqttMessage(payload.toString().getBytes()));
 	}
 	
 	
