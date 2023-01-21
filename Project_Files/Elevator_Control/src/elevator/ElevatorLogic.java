@@ -14,7 +14,7 @@ public class ElevatorLogic {
 	private boolean first_request = false;
 	private int init_direction;
 	private int first_floor_request;
-	private boolean init_request;
+
 	private ElevatorControl control;
 	
 	List<Integer> up_requests = new ArrayList<>();
@@ -60,13 +60,13 @@ public class ElevatorLogic {
 	}
 	
 	public void floor_request(int direction, int target_floor) {
+		System.out.println("wanted direction:" + direction);
 		setCurrentFloor(control.getCurrentFloor());
 		if (getCurrentDirection() == none) { // init_request
 			if (direction != none) { // from outside
 				init_direction = direction; // direction after init_floor is reached
 				first_floor_request = target_floor; // save target_floor
 				first_request = true; //flag to block new requests from changing the next_target_floor until the init_floor is reached
-				init_request = true; //current request is init_request
 			}
 			if (target_floor - current_floor > 0) {
 				direction = up;
@@ -101,7 +101,7 @@ public class ElevatorLogic {
 			}
 		}
 		update_next_target_floor();
-		init_request = false;
+		printElevatorInfo(current_floor);
 	}
 
 
@@ -150,6 +150,7 @@ public class ElevatorLogic {
 	
 	private void forward_wait_lists() {
 		if (getCurrentDirection() == up) {
+			System.out.println("Forward wait list");
 			down_requests.addAll(down_wait);
 			down_wait.clear();
 		}
@@ -227,6 +228,7 @@ public class ElevatorLogic {
 		};
 		System.out.println("floor_arrived: before update");
 		update_next_target_floor();
+		printElevatorInfo(current_floor);
 	}
 	
 	public int getTargetFloor()
@@ -252,4 +254,36 @@ public class ElevatorLogic {
 	{
 		this.control = control;
 	}
+	
+	public void printElevatorInfo(int floor) {
+        for(int i=0;i<15;i++) {
+            System.out.printf("");
+        }
+        System.out.printf("\nTESTOUTPUT: (floor " + floor + ")\n");
+        for(int i=0;i<15;i++) {
+            System.out.printf("");
+        }
+        System.out.printf("\n");
+
+        System.out.printf("down_requests:\n");
+        for(int i = 0; i < down_requests.size(); i++) {
+            System.out.printf("%d\n", down_requests.get(i));
+        }
+        System.out.printf("\nup_requests:\n");
+        for(int i = 0; i < up_requests.size(); i++) {
+            System.out.printf("%d\n", up_requests.get(i));
+        }
+        System.out.printf("\ndown_wait:\n");
+        for(int i = 0; i < down_wait.size(); i++) {
+            System.out.printf("%d\n", down_wait.get(i));
+        }
+        System.out.printf("\nup_wait:\n");
+        for(int i = 0; i < up_wait.size(); i++) {
+            System.out.printf("%d\n", up_wait.get(i));
+        }
+
+        System.out.printf("\nnext target: %d\n", getTargetFloor());
+        System.out.printf("Current direction: %d\n", getCurrentDirection());
+    }
+	
 }

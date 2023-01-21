@@ -17,7 +17,7 @@ public class Main {
     	
     	//Testbench testbench = new Testbench(logic);
     	control.start();
-    	MQTT_Client client = new MQTT_Client("elevator", "tcp://192.168.0.172:1883", logic.eventHandler);
+    	MQTT_Client client = new MQTT_Client("elevator", "tcp://192.168.0.101:1883", logic.eventHandler);
     	client.connect();
     	client.subscribe("#");
     	//testbench.start();

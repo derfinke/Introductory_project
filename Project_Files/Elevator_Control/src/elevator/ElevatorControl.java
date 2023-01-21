@@ -386,10 +386,10 @@ public class ElevatorControl extends Thread{
     	}
     }
     
-    public void ApproachStop(int stop, int Direction) throws Exception
+    synchronized public void ApproachStop(int stop, int Direction) throws Exception
     {
-    	long time_ms = 0;
-    	StopWatch myStopWatch = new StopWatch();
+    	//long time_ms = 0;
+    	//StopWatch myStopWatch = new StopWatch();
 		if(Direction == 1)
 		{
 	    	switch(stop)

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-public class Testbench extends Thread{
+public class Testbench{
 	private ElevatorLogic logic;
 	
 	public void mockFloorEvent(String event, int data) throws Exception {
@@ -55,11 +55,11 @@ public class Testbench extends Thread{
 	
 	public Testbench(ElevatorLogic logic) throws Exception {
 		this.logic = logic;
+		run();
 	}
 	
-	@Override 
 	public void run() {
-//		JSONObject json = new JSONObject();
+		JSONObject json = new JSONObject();
 //		json.put("floorArrived", "");
 //		json.put("timestamp", "kurz vor knapp");
 		//logic.mockEvent("", json);
@@ -67,44 +67,23 @@ public class Testbench extends Thread{
 		//1 to 4 upwards with halt in 3(up) request in 2(down)
 //    	logic.setCurrentFloor(1);
 //    	logic.current_direction = logic.up;
+    	printElevatorInfo(1);
+    	//mockFloorEvent("stopButtonDown", 4);
+    	//mockFloorEvent("stopButtonUp", 2);
     	
-    	try {
-    		
-    		
-			
-	    	
-//		    logic.floor_request(ElevatorLogic.up, 2);
-//		    logic.floor_request(ElevatorLogic.up, 3);
-//		    logic.current_floor = 3;
-//		    logic.floor_request(ElevatorLogic.up, 4);
-    		mockFloorEvent("stopButtonUp", 2);
-    		mockFloorEvent("stopButtonUp", 3);
-    		mockFloorEvent("stopButtonUp", 4);
-    		printElevatorInfo(1);
-		    /*while(true) {
-    			if (current_floor != logic.getCurrentFloor()) {
-    				current_floor = logic.getCurrentFloor();
-    				printElevatorInfo(current_floor);
-    				switch(current_floor) {
-	    			case 1:
-	    				
-	    				break;
-	    			
-				    case 2:
-						mockFloorEvent("floorSelection", 3);
-						break;
-						
-				    case 4:
-				    	mockFloorEvent("floorSelection", 1);
-				    	break;
-    			}
-    			}
-    			
-    		}*/
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//	    logic.floor_request(ElevatorLogic.up, 2);
+//	    logic.floor_request(ElevatorLogic.up, 3);
+	    printElevatorInfo(2);
+//	    logic.current_floor = 3;
+//	    logic.floor_request(ElevatorLogic.up, 4);
+	    //mockFloorEvent("stopButtonUp", 1);
+	    printElevatorInfo(3);
+//	    mockFloorEvent("floorArrived", 3);			//get current floor from nicos function(name?)
+//	    logic.current_floor = 4;
     	
+	    printElevatorInfo(4);
+		
 	}
 }
+
+
