@@ -187,7 +187,7 @@ public class ElevatorControl extends Thread{
 		}
 	}
 	
-	public void readSensor()
+	synchronized public void readSensor()
 	{
         boolean[] sensorValuesFloor = new boolean[27];
         boolean[] sensorValuesDoorAndMotor = new boolean[5];
@@ -252,7 +252,7 @@ public class ElevatorControl extends Thread{
                 " | m_error = " + m_error);
     }
 	
-    public void motorV2Up() {
+    synchronized public void motorV2Up() {
     	try {
 			client.WriteSingleCoil(11, true);
 		} catch (Exception e) {
@@ -260,7 +260,7 @@ public class ElevatorControl extends Thread{
 		}
     }
     
-    public void motorV2Down() {
+    synchronized public void motorV2Down() {
     	try {
     		client.WriteSingleCoil(8, true);
 		} catch (Exception e) {
@@ -321,7 +321,7 @@ public class ElevatorControl extends Thread{
 
     }
     
-    public int getCurrentFloor()
+    synchronized public int getCurrentFloor()
     {
     	return current_floor;
     }
@@ -386,10 +386,10 @@ public class ElevatorControl extends Thread{
     	}
     }
     
-    public void ApproachStop(int stop, int Direction) throws Exception
+    synchronized public void ApproachStop(int stop, int Direction) throws Exception
     {
-    	long time_ms = 0;
-    	StopWatch myStopWatch = new StopWatch();
+    	//long time_ms = 0;
+    	//StopWatch myStopWatch = new StopWatch();
 		if(Direction == 1)
 		{
 	    	switch(stop)

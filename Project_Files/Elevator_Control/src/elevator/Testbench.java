@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-public class Testbench {
+public class Testbench{
 	private ElevatorLogic logic;
 	
 	public void mockFloorEvent(String event, int data) throws Exception {
@@ -55,7 +55,11 @@ public class Testbench {
 	
 	public Testbench(ElevatorLogic logic) throws Exception {
 		this.logic = logic;
-//		JSONObject json = new JSONObject();
+		run();
+	}
+	
+	public void run() {
+		JSONObject json = new JSONObject();
 //		json.put("floorArrived", "");
 //		json.put("timestamp", "kurz vor knapp");
 		//logic.mockEvent("", json);
@@ -64,21 +68,22 @@ public class Testbench {
 //    	logic.setCurrentFloor(1);
 //    	logic.current_direction = logic.up;
     	printElevatorInfo(1);
-    	mockFloorEvent("stopButtonUp", 2);
-    	mockFloorEvent("stopButtonUp", 3);
+    	//mockFloorEvent("stopButtonDown", 4);
+    	//mockFloorEvent("stopButtonUp", 2);
+    	
 //	    logic.floor_request(ElevatorLogic.up, 2);
 //	    logic.floor_request(ElevatorLogic.up, 3);
 	    printElevatorInfo(2);
 //	    logic.current_floor = 3;
 //	    logic.floor_request(ElevatorLogic.up, 4);
-	    mockFloorEvent("stopButtonUp", 4);
+	    //mockFloorEvent("stopButtonUp", 1);
 	    printElevatorInfo(3);
 //	    mockFloorEvent("floorArrived", 3);			//get current floor from nicos function(name?)
 //	    logic.current_floor = 4;
     	
 	    printElevatorInfo(4);
-	    
-	    
-	    
+		
 	}
 }
+
+
