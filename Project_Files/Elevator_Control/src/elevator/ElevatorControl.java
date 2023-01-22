@@ -286,10 +286,12 @@ public class ElevatorControl extends Thread{
 		}
 	}
 	
-	public void emergencyStop()
+	public void emergencyStop(boolean state)
 	{
-
+		
         try {
+        	if(state)
+        	{
         	lock.lock();
         	//set velocity to zero
             client.WriteSingleRegister(1, 0);
@@ -307,7 +309,10 @@ public class ElevatorControl extends Thread{
 			jsonObject.put("timestamp", now);
 			jsonObject.put("errorState", "error");
 			publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
-	        
+        	}
+        	else {
+        		reset();
+        	}
 		} catch (ModbusException | IOException | JSONException | MqttException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -548,6 +553,7 @@ public class ElevatorControl extends Thread{
     					client.WriteSingleRegister(1, 0);
     					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
+    					elevator_is_moving = false;
     				}
 	    		}
 	    		lock.unlock();
@@ -571,6 +577,7 @@ public class ElevatorControl extends Thread{
     					client.WriteSingleRegister(1, 0);
     					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
+    					elevator_is_moving = false;
     				}   				
 	    		}
 	    		lock.unlock();
@@ -594,6 +601,7 @@ public class ElevatorControl extends Thread{
     					client.WriteSingleRegister(1, 0);
     					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
+    					elevator_is_moving = false;
     				}	
 	    		}
 	    		lock.unlock();
@@ -623,6 +631,7 @@ public class ElevatorControl extends Thread{
     					client.WriteSingleRegister(1, 0);
     					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
+    					elevator_is_moving = false;
     				}
 	    		}
 	    		lock.unlock();
@@ -646,6 +655,7 @@ public class ElevatorControl extends Thread{
     					client.WriteSingleRegister(1, 0);
     					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
+    					elevator_is_moving = false;
     				}
 	    		}
 	    		lock.unlock();
@@ -669,6 +679,7 @@ public class ElevatorControl extends Thread{
     					client.WriteSingleRegister(1, 0);
     					logic.FloorEventHandler("floorArrived", 0);
     					arrived_floor_flag = true;
+    					elevator_is_moving = false;
     				}
 	    		}
 	    		lock.unlock();
