@@ -1,18 +1,21 @@
 package elevator;
 
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import java.time.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
+import mqtt.MQTT_Client;
 
 import java.util.concurrent.locks.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.apache.commons.lang3.time.*;
+import org.eclipse.paho.client.mqttv3.MqttException;
 public class ElevatorControl extends Thread{
 	
 	private ModbusClient client;
@@ -46,13 +49,19 @@ public class ElevatorControl extends Thread{
     private boolean m_ready;
     private boolean m_on;
     private boolean m_error;
+    private int	previous_floor;
     
     private int current_floor;
     private boolean arrived_floor_flag;
+    private boolean elevator_is_moving;
 	private int Direction = 0;
 	private int wishedFloor = 0;
 	
+	private LocalDateTime now = LocalDateTime.now();
+	private MQTT_Client publisher;
+	
 	private ReentrantLock lock = new ReentrantLock(true);
+
 	
 	public ElevatorControl(ElevatorLogic logic) throws UnknownHostException, IOException {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de",506);
@@ -67,14 +76,10 @@ public class ElevatorControl extends Thread{
 		
 	}
 	
-//	public void mockFloorEvent(String event, int data) throws Exception {
-//		JSONObject payload = new JSONObject();
-//		payload.put(event, data);
-//		logic.mockEvent(event, payload);
-//		
-//	}
-	private boolean[] readValues = new boolean[5]; 
-
+	public void passMqtt(MQTT_Client publisher)
+	{
+		this.publisher = publisher;
+	}
 	
 	public boolean getDoorIsOpen() {
 		return s_dopened;
@@ -102,6 +107,9 @@ public class ElevatorControl extends Thread{
 	@Override
 	public void run()
 	{
+		initCurrentFloor();
+		elevator_is_moving = false;
+		JSONObject jsonObject = new JSONObject();
     	while(true)
     	{
     		wishedFloor = logic.getTargetFloor();
@@ -110,27 +118,61 @@ public class ElevatorControl extends Thread{
     		//Direction = Logic_Object.getCurrentDirection();
     		if(wishedFloor != 0)
     		{
+    			previous_floor = current_floor;
     			setCurrentFloor(Direction);
-    			try {
+    			try 
+    			{
 					ApproachStop(wishedFloor, Direction);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+	
+					if(current_floor > previous_floor || current_floor < previous_floor)
+					{
+						logic.setCurrentFloor(current_floor);
+						jsonObject.put("timestamp", now);
+						jsonObject.put("currentFloor", current_floor);
+						publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
+						jsonObject.remove("timestamp");
+						jsonObject.remove("currentFloor");
+					}
+    			} catch (Exception e) {
+    				e.printStackTrace();
+    			}
+    			if(wishedFloor > current_floor && !elevator_is_moving)
+    			{
+    				motorV2Up();
+    				elevator_is_moving = true;
+    			}
+    			else if(wishedFloor < current_floor && !elevator_is_moving)
+    			{
+    				motorV2Down();
+    				elevator_is_moving = true;
+    			}
     		}
-    		else
-    		{
-    			
-    		}
-//    		System.out.println(control.getCurrentFloor());
     	}
 	}
-
-
+	
 	public void reset() 
+	{
+		lock.lock();
+		try
+		{
+			client.WriteSingleRegister(0, 0);
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("timestamp", now);
+			jsonObject.put("errorState", "OK");
+			publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
+		} catch (ModbusException | IOException | JSONException | MqttException e) {
+			e.printStackTrace();
+		}
+		lock.unlock();
+		elevator_is_moving = false;
+	}
+
+	public void hard_reset() 
 	{
 		try 
 		{
 			readSensor();
+			lock.lock();
             client.WriteSingleRegister(0, 1);
 
             // Set the velocity to 0
@@ -145,6 +187,8 @@ public class ElevatorControl extends Thread{
             client.WriteSingleCoil(13, false);
 
             client.WriteSingleRegister(0, 0);
+            lock.unlock();
+			
 		} catch (ModbusException | IOException e) {
 			e.printStackTrace();
 		}
@@ -154,18 +198,36 @@ public class ElevatorControl extends Thread{
 	{
 		try 
 		{	
+			readSensor();
 			if(s_dclosed && m_ready && !m_on)
 			{
 				lock.lock();
 				client.WriteSingleCoil(12, false); //set register to close door to false
 				client.WriteSingleCoil(13, true);  //set register to open door to true
 				lock.unlock();
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("timestamp", now);
+				jsonObject.put("doorStatus", "open");
+				publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
+//				boolean[] doorState;
+//				while(!s_dopened)
+//				{
+//					lock.lock();
+//					doorState = client.ReadDiscreteInputs(80, 1);
+//					s_dopened = doorState[0];
+//					lock.unlock();
+//				}
+//				jsonObject.remove("timestamp");
+//				jsonObject.remove("doorStatus");
+//				jsonObject.put("timestamp", now);
+//				jsonObject.put("doorStatus", "open");
+//				publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
 			}
 			else
 			{
 				System.out.println("Door cant be opened at the moment");
 			}
-		} catch (ModbusException | IOException e) {
+		} catch (ModbusException | IOException | JSONException | MqttException e) {
 			e.printStackTrace();
 		}
 	}
@@ -174,21 +236,24 @@ public class ElevatorControl extends Thread{
 	{
 		try 
 		{	
-			
+			readSensor();
 			if(s_dopened && !m_ready && !m_on)
 			{
 				lock.lock();
 				client.WriteSingleCoil(13, false); //set register to open door to false
 				client.WriteSingleCoil(12, true);  //set register to close door to true
 				lock.unlock();
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("timestamp", now);
+				jsonObject.put("doorStatus", "closed");
+				publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
 			}
 			else
 			{
 				System.out.println("Door cant be closed at the moment");
 			}
-			lock.unlock();
 
-		} catch (ModbusException | IOException e) {
+		} catch (ModbusException | IOException | JSONException | MqttException e) {
 			e.printStackTrace();
 		}
 	}
@@ -197,7 +262,9 @@ public class ElevatorControl extends Thread{
 	{
 		try 
 		{
+			lock.lock();
 			boolean[] doorStatus = client.ReadCoils(12, 2);
+			lock.unlock();
 			if(doorStatus[0] == true)
 			{
 				lock.lock();
@@ -234,8 +301,14 @@ public class ElevatorControl extends Thread{
 	        // stop door opening / closing
 	        client.WriteSingleCoil(12, false);
 	        client.WriteSingleCoil(13, false);
+//
 	        lock.unlock();
-		} catch (ModbusException | IOException e) {
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("timestamp", now);
+			jsonObject.put("errorState", "error");
+			publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
+	        
+		} catch (ModbusException | IOException | JSONException | MqttException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -329,39 +402,39 @@ public class ElevatorControl extends Thread{
 		}
     }
     
-    public void motorV1Up() {
-    	try {
-    		client.WriteSingleCoil(10, true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    }
-    
-    public void motorV1Down() {
-    	try {
-    		client.WriteSingleCoil(9, true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    }
-    
-    public void motorV1DownStop() {
-    	try {
-    		client.WriteSingleCoil(9, false);
-    	} catch(Exception e)
-    	{
-    		e.printStackTrace();
-    	}
-    }
-    
-    public void motorV1UpStop() {
-    	try {
-    		client.WriteSingleCoil(10, false);
-    	} catch(Exception e)
-    	{
-    		e.printStackTrace();
-    	}
-    }
+//    public void motorV1Up() {
+//    	try {
+//    		client.WriteSingleCoil(10, true);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//    }
+//    
+//    public void motorV1Down() {
+//    	try {
+//    		client.WriteSingleCoil(9, true);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//    }
+//    
+//    public void motorV1DownStop() {
+//    	try {
+//    		client.WriteSingleCoil(9, false);
+//    	} catch(Exception e)
+//    	{
+//    		e.printStackTrace();
+//    	}
+//    }
+//    
+//    public void motorV1UpStop() {
+//    	try {
+//    		client.WriteSingleCoil(10, false);
+//    	} catch(Exception e)
+//    	{
+//    		e.printStackTrace();
+//    	}
+//    }
     
     public void motorV2UpStop() {
     	try {
@@ -389,7 +462,6 @@ public class ElevatorControl extends Thread{
     
     private void initCurrentFloor()
     {
-    	JSONObject json = new JSONObject();
     	readSensor();
 
     	if(s_l1r) 
@@ -431,7 +503,7 @@ public class ElevatorControl extends Thread{
     			current_floor = 4;
     		}
     	}
-    	else
+    	else if(Direction == -1)
     	{
     		if(s_l3au)
     		{

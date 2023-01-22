@@ -26,8 +26,8 @@ public class MQTT_Client {
         options.setPassword(PASSWORD.toCharArray());
         options.setCleanSession(false);
         options.setConnectionTimeout(60);
-        qos = 0;
-        retained = true;
+        qos = 1;
+        retained = false;
         this.logic = logic;
         this.control = control;
     }
@@ -38,7 +38,7 @@ public class MQTT_Client {
 
     public void publish(String topic, String payload) throws MqttException {
         client.publish(topic, payload.getBytes(), qos, retained);
-    }
+    } 
 
     public void subscribe(String topic) throws MqttException {
         client.subscribe(topic, MqttEventHandler);

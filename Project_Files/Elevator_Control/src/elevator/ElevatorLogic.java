@@ -1,10 +1,9 @@
 package elevator;
-import org.json.JSONObject;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.apache.commons.lang3.time.*;
+
 
 public class ElevatorLogic {
     private static final int down = -1, up = 1, none=0;
@@ -14,7 +13,7 @@ public class ElevatorLogic {
 	private boolean first_request = false;
 	private int init_direction;
 	private int first_floor_request;
-
+	private long time_in_ms;
 	private ElevatorControl control;
 	
 	List<Integer> up_requests = new ArrayList<>();
@@ -35,8 +34,18 @@ public class ElevatorLogic {
 				floor_request(getCurrentDirection(), floor);
 				break;
 			case "floorArrived":
+				control.openDoor();
 				floor_arrived();
 				System.out.println("in floorArrived Event");
+				StopWatch watch = new StopWatch();
+				watch.start();
+				time_in_ms = watch.getTime();
+				while(time_in_ms != 6000)
+				{
+					time_in_ms = watch.getTime();
+				}
+				watch.stop();
+				control.closeDoor();
 				break;
 		}
 	}
@@ -166,21 +175,12 @@ public class ElevatorLogic {
 			//TODO: implement pick up
 			System.out.println("first_request == true");
 			next_target_floor = first_floor_request;
-			if(current_direction == 1)
-			{
-				control.motorV2Up();
-			}
-			else if(current_direction == -1)
-			{
-				control.motorV2Down();
-			}
 			return;
 		}
 		if (getCurrentDirection() == up) {
 			if(!up_requests.isEmpty()) {
 				next_target_floor = Collections.min(up_requests); //choose lowest request, that is still above current floor
 				System.out.println("In next Target Floor Up");
-				control.motorV2Up();
 			}
 			else if(!down_requests.isEmpty()){ //if no more up_requests check for highest down_request target, that is still above current floor
 				int max_target = 1;
@@ -192,14 +192,12 @@ public class ElevatorLogic {
 				}
 				next_target_floor = max_target;
 				System.out.println("In next Target Floor Up aber erst down");
-				control.motorV2Up();
 			}
 		}
 		else if(getCurrentDirection() == down) {
 			if(!down_requests.isEmpty()) {
 				next_target_floor = Collections.max(down_requests); //choose highest request, that is still below current floor
 				System.out.println("In next Target Floor Down");
-				control.motorV2Down();
 			}
 			else if(!up_requests.isEmpty()){ //if no more down_requests check for lowest up_request target, that is still below current floor
 				int min_target = 4;
@@ -211,7 +209,6 @@ public class ElevatorLogic {
 				}
 				next_target_floor = min_target;
 				System.out.println("In next Target Floor Down aber up");
-				control.motorV2Down();
 			}
 		}
 	}
