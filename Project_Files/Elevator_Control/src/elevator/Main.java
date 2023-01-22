@@ -14,13 +14,11 @@ public class Main {
     	ElevatorControl control  = new ElevatorControl(logic);
     	control.reset();
     	logic.initControl(control);
-    	
-    	//Testbench testbench = new Testbench(logic);
+    	//new Testbench(logic);
     	control.start();
     	MQTT_Client client = new MQTT_Client("elevator", "tcp://192.168.0.101:1883", logic.eventHandler);
     	client.connect();
     	client.subscribe("#");
-    	//testbench.start();
     	
     }
 }

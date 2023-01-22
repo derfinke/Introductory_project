@@ -9,11 +9,14 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public class ElevatorLogic {
     private static final int down = -1, up = 1, none=0;
 	private int current_direction = none;
-	private int current_floor;
+	public int current_floor;
 	private int next_target_floor;
+	private boolean wait_first_floor_arrived = false;
 	private boolean first_request = false;
 	private int init_direction;
 	private int first_floor_request;
+	private boolean down_for_up_request = false;
+	private boolean up_for_down_request = false;
 
 	private ElevatorControl control;
 	
@@ -38,7 +41,7 @@ public class ElevatorLogic {
 					System.out.println("in StopButtonUp Event");
 					break;
 				case "floorSelection":
-					floor_request(getCurrentDirection(), json.getInt("floorSelection"));
+					floor_request(none, json.getInt("floorSelection"));
 					break;
 				case "floorArrived":
 					floor_arrived();
@@ -59,24 +62,32 @@ public class ElevatorLogic {
 		if (!list.contains(floor)) list.add(floor);
 	}
 	
-	public void floor_request(int direction, int target_floor) {
-		System.out.println("wanted direction:" + direction);
-		setCurrentFloor(control.getCurrentFloor());
+	public void floor_request(int requested_direction, int target_floor) {
+		//System.out.println("wanted direction:" + requested_direction);
+		//setCurrentFloor(control.getCurrentFloor());
 		if (getCurrentDirection() == none) { // init_request
-			if (direction != none) { // from outside
-				init_direction = direction; // direction after init_floor is reached
+			if (requested_direction != none) { // from outside
+				init_direction = requested_direction; // direction after init_floor is reached
 				first_floor_request = target_floor; // save target_floor
-				first_request = true; //flag to block new requests from changing the next_target_floor until the init_floor is reached
+				wait_first_floor_arrived = true; //flag to block new requests from changing the next_target_floor until the init_floor is reached
+				first_request = true;
 			}
+			else {
+				first_request = true;
+			}
+		}
+		if(requested_direction == none || first_request) {
 			if (target_floor - current_floor > 0) {
-				direction = up;
+				requested_direction = up;
 			}
 			else if (target_floor - current_floor < 0) {
-				direction = down;
+				requested_direction = down;
 			}
-			setCurrentDirection(direction);
+			if(first_request) {
+				current_direction = requested_direction;
+			}
 		}
-		if (direction != getCurrentDirection()) { // requested direction is unequal to current_direction
+		if (requested_direction != getCurrentDirection()) { // requested direction is unequal to current_direction
 			if (getCurrentDirection() == up) {
 				add_request(down_requests, target_floor);
 			}
@@ -84,7 +95,7 @@ public class ElevatorLogic {
 				add_request(up_requests, target_floor);
 			}
 		}
-		else if (direction * (target_floor - current_floor) > 0){ //
+		else if (requested_direction * (target_floor - current_floor) > 0){ // if in correct direction and on the way
 			if (getCurrentDirection() == up) {
 				add_request(up_requests, target_floor);
 			}
@@ -92,143 +103,168 @@ public class ElevatorLogic {
 				add_request(down_requests, target_floor);
 			}
 		}
-		else {
-			if (getCurrentDirection() == up) {
-				add_request(up_wait, target_floor);
+		else { //If right direction but not on the current way
+			if (current_floor > target_floor && current_direction == up) {					
+				add_request(up_wait, target_floor); //was up_wait
 			}
-			else if (getCurrentDirection() == down){
-				add_request(down_wait, target_floor);
+			else if (current_floor < target_floor && current_direction == down){			
+				add_request(down_wait, target_floor); //was down_wait
 			}
 		}
 		update_next_target_floor();
-		printElevatorInfo(current_floor);
+		
+		if (first_request) {
+			first_request = false;
+		}
+		printElevatorInfo(current_floor); //comment for debugging in testbench
 	}
 
 
 	
 	private void delete_complied_requests() {
-		if (getCurrentDirection() == up) {
+		if (getCurrentDirection() == up || down_for_up_request) {
 			up_requests.removeIf(floor -> floor.equals(current_floor));
+			if(down_for_up_request) {
+				down_for_up_request = false;
+			}
 		}
-		else if (getCurrentDirection() == down) {
+		if (getCurrentDirection() == down || up_for_down_request) {
 			down_requests.removeIf(floor -> floor.equals(current_floor));
+			if(up_for_down_request) {
+				up_for_down_request = false;
+			}
 		}
 	}
 	
 	private boolean update_current_direction() {
 		int last_direction = getCurrentDirection();
-		if (first_request) {
-			setCurrentDirection(init_direction);
-			first_request = false;
-			return last_direction != getCurrentDirection();
+		if (wait_first_floor_arrived && current_floor == first_floor_request) {
+			current_direction = init_direction;
+			wait_first_floor_arrived = false;
+			return last_direction != current_direction;
 		}
-		if (down_requests.isEmpty() && up_requests.isEmpty()) {
-			setCurrentDirection(none);
+		if (down_requests.isEmpty() && up_requests.isEmpty()) { 
+			if(forward_wait_lists(toggleDirection())) { //check wait_lists from other direction. Contains requests and forwards to request list
+				current_direction = toggleDirection();
+				return true;				// if yes, check direction again
+			}
+			else {
+				current_direction = none;
+			}
+			
+			
 		}
 		if (getCurrentDirection() == down) {
 			if (current_floor == 1) { // if elevator reached end of direction
-				setCurrentDirection(up);
+				current_direction = up;
 			}
 			if (down_requests.isEmpty() && !up_requests.isEmpty()) {
 				if (Collections.min(up_requests) > current_floor) { // if no more down_requests and no reachable up_request
-					setCurrentDirection(up);
+					current_direction = up;
+				}
+				else {
+					down_for_up_request = true;
+					delete_complied_requests();
+					update_current_direction();
 				}
 			}
 		}
 		else if (getCurrentDirection() == up) {
 			if (current_floor == 4) { // if elevator reached end of direction
-				setCurrentDirection(down);
+				current_direction = down;
 			}
 			if (up_requests.isEmpty() && !down_requests.isEmpty()) {
 				if (Collections.max(down_requests) < current_floor) { // if no more up_requests and no reachable down_request
-					setCurrentDirection(down);
+					current_direction = down;
+				}
+				else {
+					up_for_down_request = true;
+					delete_complied_requests();
+					update_current_direction();
 				}
 			}
 		}
-		return last_direction != getCurrentDirection();
+		return last_direction != current_direction;
 	}
 	
-	private void forward_wait_lists() {
-		if (getCurrentDirection() == up) {
-			System.out.println("Forward wait list");
+	private boolean forward_wait_lists(int direction) {
+		
+		System.out.println("Forward wait list");
+		if (direction == up) {
+			if(down_wait.isEmpty()) {
+				return false;
+			}
+			
 			down_requests.addAll(down_wait);
 			down_wait.clear();
+			
 		}
-		else if(getCurrentDirection() == down) {
+		else if(direction == down) {
+			if(up_wait.isEmpty()) {
+				return false;
+			}
 			up_requests.addAll(up_wait);
 			up_wait.clear();
+		}
+		
+		return true;
+	}
+	
+	private int toggleDirection() {
+		if(current_direction == up) {
+			return down;
+		}
+		else if(current_direction == down){
+			return up;
+		}
+		else {
+			return none;
 		}
 	}
 	
 	private void update_next_target_floor() {
-		if(first_request) { //!init
-			//TODO: implement pick up
-			System.out.println("first_request == true");
-			next_target_floor = first_floor_request;
-			if(current_direction == 1)
-			{
-				control.motorV2Up();
-			}
-			else if(current_direction == -1)
-			{
-				control.motorV2Down();
-			}
-			return;
-		}
-		if (getCurrentDirection() == up) {
+		
+		if (current_direction == up) {
 			if(!up_requests.isEmpty()) {
 				next_target_floor = Collections.min(up_requests); //choose lowest request, that is still above current floor
 				System.out.println("In next Target Floor Up");
-				control.motorV2Up();
+				
 			}
 			else if(!down_requests.isEmpty()){ //if no more up_requests check for highest down_request target, that is still above current floor
-				int max_target = 1;
-				for (int i=0; i< down_requests.size(); i++) {
-					int dr = down_requests.get(i);
-					if (dr > current_floor && dr > max_target) {
-						max_target = dr;
-					}
+				int max_down_request = Collections.max(down_requests);
+				if(max_down_request > current_floor) {
+					next_target_floor = max_down_request;
+					System.out.println("In next Target Floor Up für down request");
 				}
-				next_target_floor = max_target;
-				System.out.println("In next Target Floor Up aber erst down");
-				control.motorV2Up();
 			}
+				
 		}
-		else if(getCurrentDirection() == down) {
+		else if(current_direction == down) {
 			if(!down_requests.isEmpty()) {
 				next_target_floor = Collections.max(down_requests); //choose highest request, that is still below current floor
 				System.out.println("In next Target Floor Down");
-				control.motorV2Down();
+				
 			}
 			else if(!up_requests.isEmpty()){ //if no more down_requests check for lowest up_request target, that is still below current floor
-				int min_target = 4;
-				for (int i=0; i< up_requests.size(); i++) {
-					int ur = up_requests.get(i);
-					if (ur < current_floor && ur < min_target) {
-						min_target = ur;
-					}
+				int min_up_request = Collections.min(up_requests);
+				if(min_up_request < current_floor) {
+					next_target_floor = min_up_request;
+					System.out.println("In next Target Floor Down aber up");
 				}
-				next_target_floor = min_target;
-				System.out.println("In next Target Floor Down aber up");
-				control.motorV2Down();
 			}
 		}
 	}
 	
 	public void floor_arrived() {
-		//open / close door
-		if (first_request) {
-			System.out.println("floor_arrived: first_request = true");
-			first_request = false;
-		}
-		setCurrentFloor(control.getCurrentFloor());
+		
+		
 		delete_complied_requests();
 		if(update_current_direction()) {
-			forward_wait_lists();
+			forward_wait_lists(current_direction);
 		};
 		System.out.println("floor_arrived: before update");
 		update_next_target_floor();
-		printElevatorInfo(current_floor);
+		//printElevatorInfo(current_floor); //uncommment for debugging
 	}
 	
 	public int getTargetFloor()
@@ -254,6 +290,9 @@ public class ElevatorLogic {
 	{
 		this.control = control;
 	}
+	
+	
+	
 	
 	public void printElevatorInfo(int floor) {
         for(int i=0;i<15;i++) {

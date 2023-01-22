@@ -10,8 +10,10 @@ import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
 
 import org.apache.commons.lang3.time.*;
+import java.util.concurrent.locks.*;
 public class ElevatorControl extends Thread{
 	
+	private ReentrantLock lock = new ReentrantLock(true);
 	private ModbusClient client;
 	private boolean DoorIsOpen;
 	private boolean DoorIsClosed;
@@ -187,10 +189,11 @@ public class ElevatorControl extends Thread{
 		}
 	}
 	
-	synchronized public void readSensor()
+	public void readSensor()
 	{
         boolean[] sensorValuesFloor = new boolean[27];
         boolean[] sensorValuesDoorAndMotor = new boolean[5];
+        lock.lock();
 		try 
 		{
 			sensorValuesFloor = client.ReadDiscreteInputs(1, 27); //read values from register 10.0 - 10.4
@@ -223,6 +226,7 @@ public class ElevatorControl extends Thread{
         m_ready = sensorValuesDoorAndMotor[2];
         m_on = sensorValuesDoorAndMotor[3];
         m_error = sensorValuesDoorAndMotor[4];
+        lock.unlock();
 		
 	}
 	
@@ -252,20 +256,24 @@ public class ElevatorControl extends Thread{
                 " | m_error = " + m_error);
     }
 	
-    synchronized public void motorV2Up() {
+    public void motorV2Up() {
+    	lock.lock();
     	try {
 			client.WriteSingleCoil(11, true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+    	lock.unlock();
     }
     
-    synchronized public void motorV2Down() {
+    public void motorV2Down() {
+    	lock.lock();
     	try {
     		client.WriteSingleCoil(8, true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+    	lock.unlock();
     }
     
     public void motorV1Up() {
@@ -386,8 +394,9 @@ public class ElevatorControl extends Thread{
     	}
     }
     
-    synchronized public void ApproachStop(int stop, int Direction) throws Exception
+    public void ApproachStop(int stop, int Direction) throws Exception
     {
+    	lock.lock();
     	//long time_ms = 0;
     	//StopWatch myStopWatch = new StopWatch();
 		if(Direction == 1)
@@ -525,5 +534,7 @@ public class ElevatorControl extends Thread{
 	    		}
 	    	} 
 		}
+		lock.unlock();
      }
+    
 }
