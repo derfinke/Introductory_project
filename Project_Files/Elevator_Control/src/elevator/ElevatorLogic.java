@@ -1,12 +1,9 @@
 package elevator;
-import org.json.JSONObject;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
+import org.apache.commons.lang3.time.*;
 
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class ElevatorLogic {
     private static final int down = -1, up = 1, none=0;
@@ -19,46 +16,58 @@ public class ElevatorLogic {
 	private int first_floor_request;
 	private boolean down_for_up_request = false;
 	private boolean up_for_down_request = false;
+	private long time_in_ms;
 
-	//private ElevatorControl control;
+	private ElevatorControl control;
 	
 	List<Integer> up_requests = new ArrayList<>();
 	List<Integer> down_requests = new ArrayList<>();
 	List<Integer> up_wait = new ArrayList<>();
 	List<Integer> down_wait = new ArrayList<>();
 	
-	public IMqttMessageListener eventHandler = (topic, msg) -> {
-		String payload = new String(msg.getPayload());
-		JSONObject json = new JSONObject(payload);
-		String[] keys = JSONObject.getNames(json);
-		//String timeStamp = json.getString("timestamp");
-		
-		for (int i=0; i<keys.length; i++) {
-			switch(keys[i]) {
-				case "stopButtonDown":
-					floor_request(down, json.getInt("stopButtonDown"));
-					break;
-				case "stopButtonUp":
-					floor_request(up, json.getInt("stopButtonUp"));
-					System.out.println("in StopButtonUp Event");
-					break;
-				case "floorSelection":
-					floor_request(none, json.getInt("floorSelection"));
-					break;
-				case "floorArrived":
-					floor_arrived();
-					System.out.println("in floorArrived Event");
-					break;
-			}
+	public void FloorEventHandler(String key, int floor){
+		switch(key) {
+			case "stopButtonDown":
+				floor_request(down, floor);
+				break;
+			case "stopButtonUp":
+				floor_request(up, floor);
+				System.out.println("in StopButtonUp Event");
+				break;
+			case "floorSelection":
+				floor_request(none, floor);
+				break;
+			case "floorArrived":
+				control.openDoor();
+				floor_arrived();
+				System.out.println("in floorArrived Event");
+				StopWatch watch = new StopWatch();
+				watch.start();
+				time_in_ms = watch.getTime();
+				while(time_in_ms != 6000)
+				{
+					time_in_ms = watch.getTime();
+				}
+				watch.stop();
+				control.closeDoor();
+				break;
 		}
-	};
-
-
-	
-	public void mockEvent(String topic, JSONObject payload) throws Exception {
-		eventHandler.messageArrived(topic, new MqttMessage(payload.toString().getBytes()));
 	}
 	
+	public void DoorEventHandler(String doorCommand){
+		switch(doorCommand)
+		{
+			case "open":
+				control.openDoor();
+				break;
+			case "close":
+				control.closeDoor();
+				break;
+			case "stop":
+				control.stopDoor();
+				break;
+		}
+	}
 	
 	private void add_request(List<Integer> list, int floor) {
 		if (!list.contains(floor)) list.add(floor);
@@ -72,8 +81,11 @@ public class ElevatorLogic {
 				init_direction = requested_direction; // direction after init_floor is reached
 				first_floor_request = target_floor; // save target_floor
 				wait_first_floor_arrived = true; //flag to block new requests from changing the next_target_floor until the init_floor is reached
+				first_request = true;
 			}
-			first_request = true;
+			else {
+				first_request = true;
+			}
 		}
 		if(requested_direction == none || first_request) {
 			if (target_floor - current_floor > 0) {
@@ -81,10 +93,6 @@ public class ElevatorLogic {
 			}
 			else if (target_floor - current_floor < 0) {
 				requested_direction = down;
-			}
-			else if(target_floor == current_floor) {
-				System.out.println("Door open, closes");
-				floor_arrived();
 			}
 			if(first_request) {
 				current_direction = requested_direction;
@@ -225,13 +233,11 @@ public class ElevatorLogic {
 		}
 	}
 	
-	private void update_next_target_floor() {
-		
+	private void update_next_target_floor() {		
 		if (current_direction == up) {
 			if(!up_requests.isEmpty()) {
 				next_target_floor = Collections.min(up_requests); //choose lowest request, that is still above current floor
 				System.out.println("In next Target Floor Up");
-				
 			}
 			else if(!down_requests.isEmpty()){ //if no more up_requests check for highest down_request target, that is still above current floor
 				int max_down_request = Collections.max(down_requests);
@@ -240,33 +246,12 @@ public class ElevatorLogic {
 					System.out.println("In next Target Floor Up für down request");
 				}
 			}
-				
 		}
 		else if(current_direction == down) {
 			if(!down_requests.isEmpty()) {
 				next_target_floor = Collections.max(down_requests); //choose highest request, that is still below current floor
 				System.out.println("In next Target Floor Down");
-				
 			}
-			else if(!up_requests.isEmpty()){ //if no more down_requests check for lowest up_request target, that is still below current floor
-				int min_up_request = Collections.min(up_requests);
-				if(min_up_request < current_floor) {
-					next_target_floor = min_up_request;
-					System.out.println("In next Target Floor Down aber up");
-				}
-			}
-		}
-		
-		// Check if all Lists are empty, then set target floor to current floor -> no movement
-		List<List<Integer>> list_complete = Arrays.asList(up_requests,up_wait,down_requests,down_wait);
-		boolean all_lists_empty = true;
-		for(int i=0; i < 4; i++) {
-			if(!list_complete.get(i).isEmpty()) {
-				all_lists_empty = false;
-			}
-		}
-		if(all_lists_empty) {
-			next_target_floor = current_floor;
 		}
 	}
 	
@@ -300,12 +285,11 @@ public class ElevatorLogic {
 		this.current_direction = direction;
 	}
 
-	/*
+	
 	public void initControl(ElevatorControl control)
 	{
 		this.control = control;
 	}
-	*/
 	
 	
 	
