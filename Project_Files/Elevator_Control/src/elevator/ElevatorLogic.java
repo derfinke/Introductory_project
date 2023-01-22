@@ -3,6 +3,8 @@ import org.json.JSONObject;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
@@ -18,7 +20,7 @@ public class ElevatorLogic {
 	private boolean down_for_up_request = false;
 	private boolean up_for_down_request = false;
 
-	private ElevatorControl control;
+	//private ElevatorControl control;
 	
 	List<Integer> up_requests = new ArrayList<>();
 	List<Integer> down_requests = new ArrayList<>();
@@ -70,11 +72,8 @@ public class ElevatorLogic {
 				init_direction = requested_direction; // direction after init_floor is reached
 				first_floor_request = target_floor; // save target_floor
 				wait_first_floor_arrived = true; //flag to block new requests from changing the next_target_floor until the init_floor is reached
-				first_request = true;
 			}
-			else {
-				first_request = true;
-			}
+			first_request = true;
 		}
 		if(requested_direction == none || first_request) {
 			if (target_floor - current_floor > 0) {
@@ -82,6 +81,10 @@ public class ElevatorLogic {
 			}
 			else if (target_floor - current_floor < 0) {
 				requested_direction = down;
+			}
+			else if(target_floor == current_floor) {
+				System.out.println("Door open, closes");
+				floor_arrived();
 			}
 			if(first_request) {
 				current_direction = requested_direction;
@@ -253,6 +256,18 @@ public class ElevatorLogic {
 				}
 			}
 		}
+		
+		// Check if all Lists are empty, then set target floor to current floor -> no movement
+		List<List<Integer>> list_complete = Arrays.asList(up_requests,up_wait,down_requests,down_wait);
+		boolean all_lists_empty = true;
+		for(int i=0; i < 4; i++) {
+			if(!list_complete.get(i).isEmpty()) {
+				all_lists_empty = false;
+			}
+		}
+		if(all_lists_empty) {
+			next_target_floor = current_floor;
+		}
 	}
 	
 	public void floor_arrived() {
@@ -285,11 +300,12 @@ public class ElevatorLogic {
 		this.current_direction = direction;
 	}
 
-	
+	/*
 	public void initControl(ElevatorControl control)
 	{
 		this.control = control;
 	}
+	*/
 	
 	
 	
