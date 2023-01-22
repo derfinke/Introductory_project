@@ -1,10 +1,9 @@
 package elevator;
-import org.json.JSONObject;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.apache.commons.lang3.time.*;
+
 
 public class ElevatorLogic {
     private static final int down = -1, up = 1, none=0;
@@ -17,6 +16,7 @@ public class ElevatorLogic {
 	private int first_floor_request;
 	private boolean down_for_up_request = false;
 	private boolean up_for_down_request = false;
+	private long time_in_ms;
 
 	private ElevatorControl control;
 	
@@ -25,38 +25,49 @@ public class ElevatorLogic {
 	List<Integer> up_wait = new ArrayList<>();
 	List<Integer> down_wait = new ArrayList<>();
 	
-	public IMqttMessageListener eventHandler = (topic, msg) -> {
-		String payload = new String(msg.getPayload());
-		JSONObject json = new JSONObject(payload);
-		String[] keys = JSONObject.getNames(json);
-		//String timeStamp = json.getString("timestamp");
-		
-		for (int i=0; i<keys.length; i++) {
-			switch(keys[i]) {
-				case "stopButtonDown":
-					floor_request(down, json.getInt("stopButtonDown"));
-					break;
-				case "stopButtonUp":
-					floor_request(up, json.getInt("stopButtonUp"));
-					System.out.println("in StopButtonUp Event");
-					break;
-				case "floorSelection":
-					floor_request(none, json.getInt("floorSelection"));
-					break;
-				case "floorArrived":
-					floor_arrived();
-					System.out.println("in floorArrived Event");
-					break;
-			}
+	public void FloorEventHandler(String key, int floor){
+		switch(key) {
+			case "stopButtonDown":
+				floor_request(down, floor);
+				break;
+			case "stopButtonUp":
+				floor_request(up, floor);
+				System.out.println("in StopButtonUp Event");
+				break;
+			case "floorSelection":
+				floor_request(none, floor);
+				break;
+			case "floorArrived":
+				control.openDoor();
+				floor_arrived();
+				System.out.println("in floorArrived Event");
+				StopWatch watch = new StopWatch();
+				watch.start();
+				time_in_ms = watch.getTime();
+				while(time_in_ms != 6000)
+				{
+					time_in_ms = watch.getTime();
+				}
+				watch.stop();
+				control.closeDoor();
+				break;
 		}
-	};
-
-
-	
-	public void mockEvent(String topic, JSONObject payload) throws Exception {
-		eventHandler.messageArrived(topic, new MqttMessage(payload.toString().getBytes()));
 	}
 	
+	public void DoorEventHandler(String doorCommand){
+		switch(doorCommand)
+		{
+			case "open":
+				control.openDoor();
+				break;
+			case "close":
+				control.closeDoor();
+				break;
+			case "stop":
+				control.stopDoor();
+				break;
+		}
+	}
 	
 	private void add_request(List<Integer> list, int floor) {
 		if (!list.contains(floor)) list.add(floor);
@@ -222,13 +233,11 @@ public class ElevatorLogic {
 		}
 	}
 	
-	private void update_next_target_floor() {
-		
+	private void update_next_target_floor() {		
 		if (current_direction == up) {
 			if(!up_requests.isEmpty()) {
 				next_target_floor = Collections.min(up_requests); //choose lowest request, that is still above current floor
 				System.out.println("In next Target Floor Up");
-				
 			}
 			else if(!down_requests.isEmpty()){ //if no more up_requests check for highest down_request target, that is still above current floor
 				int max_down_request = Collections.max(down_requests);
@@ -237,20 +246,11 @@ public class ElevatorLogic {
 					System.out.println("In next Target Floor Up für down request");
 				}
 			}
-				
 		}
 		else if(current_direction == down) {
 			if(!down_requests.isEmpty()) {
 				next_target_floor = Collections.max(down_requests); //choose highest request, that is still below current floor
 				System.out.println("In next Target Floor Down");
-				
-			}
-			else if(!up_requests.isEmpty()){ //if no more down_requests check for lowest up_request target, that is still below current floor
-				int min_up_request = Collections.min(up_requests);
-				if(min_up_request < current_floor) {
-					next_target_floor = min_up_request;
-					System.out.println("In next Target Floor Down aber up");
-				}
 			}
 		}
 	}

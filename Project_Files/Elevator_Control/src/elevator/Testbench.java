@@ -7,12 +7,12 @@ import org.json.JSONObject;
 public class Testbench{
 	private ElevatorLogic logic;
 	
-	public void mockFloorEvent(String event, int data) throws Exception {
-		JSONObject payload = new JSONObject();
-		payload.put(event, data);
-		logic.mockEvent(event, payload);
-		
-	}
+//	public void mockFloorEvent(String event, int data) throws Exception {
+//		JSONObject payload = new JSONObject();
+//		payload.put(event, data);
+//		logic.mockEvent(event, payload);
+//		
+//	}
 	
 	
 	public Testbench(ElevatorLogic logic) throws Exception {
