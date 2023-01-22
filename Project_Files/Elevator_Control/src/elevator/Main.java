@@ -1,7 +1,6 @@
 package elevator;
-
-import mqtt.MQTT_Client;
-
+import org.apache.commons.lang3.time.*;
+import java.util.concurrent.TimeUnit;
 
 
 public class Main {
@@ -13,13 +12,13 @@ public class Main {
     public static void main(String[] args) throws Exception {
     	ElevatorLogic logic = new ElevatorLogic();
     	ElevatorControl control  = new ElevatorControl(logic);
-//    	control.reset();
+    	control.reset();
     	logic.initControl(control);
-    	MQTT_Client subscriber = new MQTT_Client("C2", "tcp://ea-pc165.ei.htwg-konstanz.de:1883", logic, control);
-    	subscriber.connect();
-    	subscriber.subscribe("/22WS-SysArch/H2/Testing");
-    	control.passMqtt(subscriber);
-    	control.hard_reset();
+    	//new Testbench(logic);
     	control.start();
+    	//MQTT_Client client = new MQTT_Client("elevator", "tcp://192.168.0.101:1883", logic.eventHandler);
+    	//client.connect();
+    	//client.subscribe("#");
+    	
     }
 }

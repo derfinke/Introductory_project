@@ -3,6 +3,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import org.apache.commons.lang3.time.*;
+import java.util.Arrays;
 
 
 public class ElevatorLogic {
@@ -38,18 +39,8 @@ public class ElevatorLogic {
 				floor_request(none, floor);
 				break;
 			case "floorArrived":
-				control.openDoor();
 				floor_arrived();
-				System.out.println("in floorArrived Event");
-				StopWatch watch = new StopWatch();
-				watch.start();
-				time_in_ms = watch.getTime();
-				while(time_in_ms != 6000)
-				{
-					time_in_ms = watch.getTime();
-				}
-				watch.stop();
-				control.closeDoor();
+				
 				break;
 		}
 	}
@@ -93,6 +84,10 @@ public class ElevatorLogic {
 			}
 			else if (target_floor - current_floor < 0) {
 				requested_direction = down;
+			}
+			else if(target_floor == current_floor) {
+				System.out.println("Door open, closes");
+				floor_arrived();
 			}
 			if(first_request) {
 				current_direction = requested_direction;
@@ -253,18 +248,44 @@ public class ElevatorLogic {
 				System.out.println("In next Target Floor Down");
 			}
 		}
+		
+		// Check if all Lists are empty, then set target floor to current floor -> no movement
+		List<List<Integer>> list_complete = Arrays.asList(up_requests,up_wait,down_requests,down_wait);
+		boolean all_lists_empty = true;
+		for(int i=0; i < 4; i++) {
+			if(!list_complete.get(i).isEmpty()) {
+				all_lists_empty = false;
+			}
+		}
+		if(all_lists_empty) {
+			next_target_floor = current_floor;
+		}
 	}
 	
 	public void floor_arrived() {
 		
+		control.openDoor();
 		
 		delete_complied_requests();
 		if(update_current_direction()) {
 			forward_wait_lists(current_direction);
-		};
+		}
 		System.out.println("floor_arrived: before update");
 		update_next_target_floor();
 		//printElevatorInfo(current_floor); //uncommment for debugging
+		
+		System.out.println("in floorArrived Event");
+		StopWatch watch = new StopWatch();
+		watch.start();
+		time_in_ms = watch.getTime();
+		
+		while(time_in_ms != 6000)
+		{
+			time_in_ms = watch.getTime();
+		}
+		
+		watch.stop();
+		control.closeDoor();
 	}
 	
 	public int getTargetFloor()
