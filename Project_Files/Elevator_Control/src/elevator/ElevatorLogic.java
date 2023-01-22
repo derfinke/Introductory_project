@@ -39,8 +39,7 @@ public class ElevatorLogic {
 				floor_request(none, floor);
 				break;
 			case "floorArrived":
-				floor_arrived();
-				
+				floor_arrived();		
 				break;
 		}
 	}
@@ -66,7 +65,7 @@ public class ElevatorLogic {
 	
 	public void floor_request(int requested_direction, int target_floor) {
 		//System.out.println("wanted direction:" + requested_direction);
-		//setCurrentFloor(control.getCurrentFloor());
+//		setCurrentFloor(control.getCurrentFloor());
 		if (getCurrentDirection() == none) { // init_request
 			if (requested_direction != none) { // from outside
 				init_direction = requested_direction; // direction after init_floor is reached

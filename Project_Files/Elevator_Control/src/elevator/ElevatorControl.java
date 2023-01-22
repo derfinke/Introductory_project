@@ -68,11 +68,11 @@ public class ElevatorControl extends Thread{
 		client.Connect();
 		initCurrentFloor();
 		this.logic = logic;
-		if(current_floor == 0)
-		{
-			reset();
-			current_floor = 1;
-		}
+//		if(current_floor == 0)
+//		{
+//			reset();
+//			current_floor = 1;
+//		}
 		
 	}
 	
@@ -110,6 +110,7 @@ public class ElevatorControl extends Thread{
 		initCurrentFloor();
 		elevator_is_moving = false;
 		JSONObject jsonObject = new JSONObject();
+		logic.setCurrentFloor(current_floor);
     	while(true)
     	{
     		wishedFloor = logic.getTargetFloor();
@@ -485,10 +486,6 @@ public class ElevatorControl extends Thread{
     	{
     		current_floor = 4;
     	}
-    	else 
-    	{
-    		current_floor = 0;
-    	}
     }
     
     public void setCurrentFloor(int Direction)
@@ -687,4 +684,8 @@ public class ElevatorControl extends Thread{
 	    	} 
 		}
      }
+    synchronized public boolean getElevatorInFloor()
+    {
+    	return arrived_floor_flag;
+    }
 }
