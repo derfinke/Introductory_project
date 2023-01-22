@@ -96,7 +96,7 @@ public class MQTT_Client {
 					resetElevator = json.getBoolean(keys[i]);
 					System.out.println("reset Event");
 					System.out.println(resetElevator);
-					control.reset();
+					control.hard_reset();
 					break;
 				case "manualDoor":
 					doorState = json.getString(keys[i]);
@@ -108,7 +108,7 @@ public class MQTT_Client {
 					emergencyStop = json.getBoolean(keys[i]);
 					System.out.println("emergencyStop Event");
 					System.out.println(emergencyStop);
-					control.emergencyStop();
+					control.emergencyStop(emergencyStop);
 					break;
 			}
 		}
