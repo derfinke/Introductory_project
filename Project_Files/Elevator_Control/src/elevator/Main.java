@@ -11,14 +11,14 @@ public class Main {
 	
     public static void main(String[] args) throws Exception {
     	ElevatorLogic logic = new ElevatorLogic();
-    	ElevatorControl control  = new ElevatorControl(logic);
-    	control.reset();
-    	logic.initControl(control);
-    	//new Testbench(logic);
-    	control.start();
-    	MQTT_Client client = new MQTT_Client("elevator", "tcp://192.168.0.101:1883", logic.eventHandler);
-    	client.connect();
-    	client.subscribe("#");
+    	//ElevatorControl control  = new ElevatorControl(logic);
+    	//control.reset();
+    	//logic.initControl(control);
+    	new Testbench(logic);
+    	//control.start();
+    	//MQTT_Client client = new MQTT_Client("elevator", "tcp://192.168.0.101:1883", logic.eventHandler);
+    	//client.connect();
+    	//client.subscribe("#");
     	
     }
 }

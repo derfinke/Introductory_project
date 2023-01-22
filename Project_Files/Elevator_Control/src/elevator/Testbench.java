@@ -23,15 +23,17 @@ public class Testbench{
 		//logic.mockEvent("", json);
 	   
 	
-    	logic.current_floor = 1;
+    	logic.current_floor = 4;
     	mockFloorEvent("stopButtonDown", 4);
-    	mockFloorEvent("stopButtonDown", 2);
     	logic.printElevatorInfo(logic.current_floor);
  
-    	
-    	
-    	logic.current_floor = 2;
+    	mockFloorEvent("floorSelecetion", 2);
     	logic.printElevatorInfo(logic.current_floor);
+    	logic.current_floor = 2;
+    	mockFloorEvent("floorArrived", 0);
+    	logic.printElevatorInfo(logic.current_floor);
+    	
+    	/*
     	
     	logic.current_floor = 3;
     	logic.printElevatorInfo(logic.current_floor);
@@ -86,6 +88,7 @@ public class Testbench{
     	logic.current_floor = 2;
     	mockFloorEvent("floorArrived", 0);
     	logic.printElevatorInfo(logic.current_floor);
+    	*/
     	
     	
     
