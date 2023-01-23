@@ -10,7 +10,7 @@ public class ElevatorLogic extends Thread{
     private static final int request = 0, arrived = 1;
 	private int current_direction = none;
 	public int current_floor;
-	private int next_target_floor;
+	private int next_target_floor = -1;
 	private boolean wait_first_floor_arrived = false;
 	private boolean first_request = false;
 	private int init_direction;
@@ -187,7 +187,7 @@ public class ElevatorLogic extends Thread{
 			}	
 		}
 		if (current_direction == down) {
-			if (current_floor == 1) { // if elevator reached end of direction
+			if (current_floor == 0) { // if elevator reached end of direction
 				current_direction = up;
 			}
 			if (down_requests.isEmpty() && !up_requests.isEmpty()) {
@@ -202,7 +202,7 @@ public class ElevatorLogic extends Thread{
 			}
 		}
 		else if (current_direction == up) {
-			if (current_floor == 4) { // if elevator reached end of direction
+			if (current_floor == 3) { // if elevator reached end of direction
 				current_direction = down;
 			}
 			if (up_requests.isEmpty() && !down_requests.isEmpty()) {
@@ -308,7 +308,7 @@ public class ElevatorLogic extends Thread{
 	}
 	
 	public void floor_arrived() {
-			
+		control.openDoor();	
 		isStopwatchRunning = true;
 		delete_complied_requests(false, false);
 		if(update_current_direction()) {

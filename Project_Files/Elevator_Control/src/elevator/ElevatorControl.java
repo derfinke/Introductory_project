@@ -55,7 +55,7 @@ public class ElevatorControl extends Thread {
 	private boolean elevator_is_moving;
 	private boolean request_door_state;
 	private int Direction = 0;
-	private int wishedFloor = 0;
+	private int wishedFloor = -1;
 
 	private LocalDateTime now = LocalDateTime.now();
 	private MQTT_Client publisher;
@@ -65,7 +65,6 @@ public class ElevatorControl extends Thread {
 	public ElevatorControl(ElevatorLogic logic) throws UnknownHostException, IOException {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de", 506);
 		client.Connect();
-		initCurrentFloor();
 		this.logic = logic;
 //		if(current_floor == 0)
 //		{
@@ -286,7 +285,7 @@ public class ElevatorControl extends Thread {
 				client.WriteSingleCoil(12, false);
 				client.WriteSingleCoil(13, false);
 //
-				
+
 				JSONObject jsonObject = new JSONObject();
 				jsonObject.put("timestamp", LocalDateTime.now());
 				jsonObject.put("errorState", "error");
@@ -412,9 +411,7 @@ public class ElevatorControl extends Thread {
 			jsonObject.put("timestamp", LocalDateTime.now());
 			jsonObject.put("currentFloor", current_floor);
 			publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -457,11 +454,9 @@ public class ElevatorControl extends Thread {
 						client.WriteSingleRegister(1, 1);
 					} else if (s_l2r && !arrived_floor_flag) {
 						client.WriteSingleRegister(1, 0);
-						openDoor();
 						logic.FloorEventHandler("floorArrived", 0);
 						arrived_floor_flag = true;
 						elevator_is_moving = false;
-						
 						request_door_state = true;
 					}
 				}
@@ -478,7 +473,6 @@ public class ElevatorControl extends Thread {
 						client.WriteSingleRegister(1, 1);
 					} else if (s_l3r && !arrived_floor_flag) {
 						client.WriteSingleRegister(1, 0);
-						openDoor();
 						logic.FloorEventHandler("floorArrived", 0);
 						arrived_floor_flag = true;
 						elevator_is_moving = false;
@@ -498,7 +492,6 @@ public class ElevatorControl extends Thread {
 						client.WriteSingleRegister(1, 1);
 					} else if (s_l4r && !arrived_floor_flag) {
 						client.WriteSingleRegister(1, 0);
-						openDoor();
 						logic.FloorEventHandler("floorArrived", 0);
 						arrived_floor_flag = true;
 						elevator_is_moving = false;
@@ -521,11 +514,9 @@ public class ElevatorControl extends Thread {
 						client.WriteSingleRegister(1, -1);
 					} else if (s_l1r && !arrived_floor_flag) {
 						client.WriteSingleRegister(1, 0);
-						openDoor();
 						logic.FloorEventHandler("floorArrived", 0);
 						arrived_floor_flag = true;
 						elevator_is_moving = false;
-						openDoor();
 						request_door_state = true;
 					}
 				}
@@ -542,7 +533,6 @@ public class ElevatorControl extends Thread {
 						client.WriteSingleRegister(1, -1);
 					} else if (s_l2r && !arrived_floor_flag) {
 						client.WriteSingleRegister(1, 0);
-						openDoor();
 						logic.FloorEventHandler("floorArrived", 0);
 						arrived_floor_flag = true;
 						elevator_is_moving = false;
@@ -562,7 +552,6 @@ public class ElevatorControl extends Thread {
 						client.WriteSingleRegister(1, -1);
 					} else if (s_l3r && !arrived_floor_flag) {
 						client.WriteSingleRegister(1, 0);
-						openDoor();
 						logic.FloorEventHandler("floorArrived", 0);
 						arrived_floor_flag = true;
 						elevator_is_moving = false;
