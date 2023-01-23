@@ -114,7 +114,7 @@ public class ElevatorControl extends Thread {
 			Direction = logic.getCurrentDirection();
 			readSensor();
 			// Direction = Logic_Object.getCurrentDirection();
-			if (wishedFloor != 0) {
+			if (wishedFloor != -1) {
 				previous_floor = current_floor;
 				setCurrentFloor(Direction);
 				try {
@@ -122,7 +122,7 @@ public class ElevatorControl extends Thread {
 
 					if (current_floor > previous_floor || current_floor < previous_floor) {
 						logic.setCurrentFloor(current_floor);
-						jsonObject.put("timestamp", now);
+						jsonObject.put("timestamp", LocalDateTime.now());
 						jsonObject.put("currentFloor", current_floor);
 						publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
 						jsonObject.remove("timestamp");
@@ -144,14 +144,14 @@ public class ElevatorControl extends Thread {
 					readSensor();
 					lock.lock();
 					if (s_dopened && !s_dclosed) {
-						jsonObject.put("timestamp", now);
+						jsonObject.put("timestamp", LocalDateTime.now());
 						jsonObject.put("doorStatus", "open");
 						publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
 						jsonObject.remove("timestamp");
 						jsonObject.remove("doorState");
 						request_door_state = false;
 					} else if (s_dclosed && !s_dopened) {
-						jsonObject.put("timestamp", now);
+						jsonObject.put("timestamp", LocalDateTime.now());
 						jsonObject.put("doorStatus", "closed");
 						publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
 						jsonObject.remove("timestamp");
@@ -171,7 +171,7 @@ public class ElevatorControl extends Thread {
 		try {
 			client.WriteSingleRegister(0, 0);
 			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("timestamp", now);
+			jsonObject.put("timestamp", LocalDateTime.now());
 			jsonObject.put("errorState", "OK");
 			publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
 		} catch (ModbusException | IOException | JSONException | MqttException e) {
@@ -214,7 +214,7 @@ public class ElevatorControl extends Thread {
 				client.WriteSingleCoil(12, false); // set register to close door to false
 				client.WriteSingleCoil(13, true); // set register to open door to true
 				JSONObject jsonObject = new JSONObject();
-				jsonObject.put("timestamp", now);
+				jsonObject.put("timestamp", LocalDateTime.now());
 				jsonObject.put("doorStatus", "moving");
 				publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
 				request_door_state = true;
@@ -235,7 +235,7 @@ public class ElevatorControl extends Thread {
 				client.WriteSingleCoil(13, false); // set register to open door to false
 				client.WriteSingleCoil(12, true); // set register to close door to true
 				JSONObject jsonObject = new JSONObject();
-				jsonObject.put("timestamp", now);
+				jsonObject.put("timestamp", LocalDateTime.now());
 				jsonObject.put("doorStatus", "moving");
 				publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
 				request_door_state = true;
@@ -288,7 +288,7 @@ public class ElevatorControl extends Thread {
 //
 				
 				JSONObject jsonObject = new JSONObject();
-				jsonObject.put("timestamp", now);
+				jsonObject.put("timestamp", LocalDateTime.now());
 				jsonObject.put("errorState", "error");
 				publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
 				lock.unlock();
@@ -399,13 +399,23 @@ public class ElevatorControl extends Thread {
 		readSensor();
 
 		if (s_l1r) {
-			current_floor = 1;
+			current_floor = 0;
 		} else if (s_l2r) {
-			current_floor = 2;
+			current_floor = 1;
 		} else if (s_l3r) {
-			current_floor = 3;
+			current_floor = 2;
 		} else if (s_l4r) {
-			current_floor = 4;
+			current_floor = 3;
+		}
+		try {
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("timestamp", LocalDateTime.now());
+			jsonObject.put("currentFloor", current_floor);
+			publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 	}
 
@@ -413,19 +423,19 @@ public class ElevatorControl extends Thread {
 		lock.lock();
 		if (Direction == 1) {
 			if (s_l2al) {
-				current_floor = 2;
+				current_floor = 1;
 			} else if (s_l3al) {
-				current_floor = 3;
+				current_floor = 2;
 			} else if (s_l4al) {
-				current_floor = 4;
+				current_floor = 3;
 			}
 		} else if (Direction == -1) {
 			if (s_l3au) {
-				current_floor = 3;
-			} else if (s_l2au) {
 				current_floor = 2;
-			} else if (s_l1au) {
+			} else if (s_l2au) {
 				current_floor = 1;
+			} else if (s_l1au) {
+				current_floor = 0;
 			}
 		}
 		lock.unlock();
@@ -436,9 +446,9 @@ public class ElevatorControl extends Thread {
 		// StopWatch myStopWatch = new StopWatch();
 		if (Direction == 1) {
 			switch (stop) {
-			case 2:
+			case 1:
 				lock.lock();
-				if (current_floor == 2) {
+				if (current_floor == 1) {
 					if (s_l2al) {
 						arrived_floor_flag = false;
 						motorV2UpStop();
@@ -457,9 +467,9 @@ public class ElevatorControl extends Thread {
 				}
 				lock.unlock();
 				break;
-			case 3:
+			case 2:
 				lock.lock();
-				if (current_floor == 3) {
+				if (current_floor == 2) {
 					if (s_l3al) {
 						arrived_floor_flag = false;
 						motorV2UpStop();
@@ -477,9 +487,9 @@ public class ElevatorControl extends Thread {
 				}
 				lock.unlock();
 				break;
-			case 4:
+			case 3:
 				lock.lock();
-				if (current_floor == 4) {
+				if (current_floor == 3) {
 					if (s_l4al) {
 						arrived_floor_flag = false;
 						motorV2UpStop();
@@ -500,9 +510,9 @@ public class ElevatorControl extends Thread {
 			}
 		} else {
 			switch (stop) {
-			case 1:
+			case 0:
 				lock.lock();
-				if (current_floor == 1) {
+				if (current_floor == 0) {
 					if (s_l1au) {
 						arrived_floor_flag = false;
 						motorV2DownStop();
@@ -521,9 +531,9 @@ public class ElevatorControl extends Thread {
 				}
 				lock.unlock();
 				break;
-			case 2:
+			case 1:
 				lock.lock();
-				if (current_floor == 2) {
+				if (current_floor == 1) {
 					if (s_l2au) {
 						arrived_floor_flag = false;
 						motorV2DownStop();
@@ -541,9 +551,9 @@ public class ElevatorControl extends Thread {
 				}
 				lock.unlock();
 				break;
-			case 3:
+			case 2:
 				lock.lock();
-				if (current_floor == 3) {
+				if (current_floor == 2) {
 					if (s_l3au) {
 						arrived_floor_flag = false;
 						motorV2DownStop();

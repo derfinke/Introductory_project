@@ -194,7 +194,7 @@ public class ElevatorLogic extends Thread{
 		
 		}
 		if (current_direction == down) {
-			if (current_floor == 1) { // if elevator reached end of direction
+			if (current_floor == 0) { // if elevator reached end of direction
 				current_direction = up;
 			}
 			if (down_requests.isEmpty() && !up_requests.isEmpty()) {
@@ -209,7 +209,7 @@ public class ElevatorLogic extends Thread{
 			}
 		}
 		else if (current_direction == up) {
-			if (current_floor == 4) { // if elevator reached end of direction
+			if (current_floor == 3) { // if elevator reached end of direction
 				current_direction = down;
 			}
 			if (up_requests.isEmpty() && !down_requests.isEmpty()) {
