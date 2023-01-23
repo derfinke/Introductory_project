@@ -109,7 +109,7 @@ public class ElevatorLogic {
 			}
 		}
 		// if right direction but not on the current way
-		else { 
+		else if(!first_request) { 
 			if (current_direction == up) {
 				add_request(up_wait, target_floor); 
 			}
@@ -248,18 +248,16 @@ public class ElevatorLogic {
 				next_target_floor = Collections.max(down_requests); //choose highest request, that is still below current floor
 				System.out.println("In next Target Floor Down");
 			}
+			else if(!up_requests.isEmpty()){ //if no more down_requests check for lowest up_request target, that is still below current floor
+                int min_up_request = Collections.min(up_requests);
+                if(min_up_request < current_floor) {
+                    next_target_floor = min_up_request;
+                }
+            }
 		}
 				// Check if all Lists are empty, then set target floor to current floor -> no movement
-		List<List<Integer>> list_complete = Arrays.asList(up_requests,up_wait,down_requests,down_wait);
-		boolean all_lists_empty = true;
-		for(int i=0; i < 4; i++) {
-				if(!list_complete.get(i).isEmpty()) {
-					all_lists_empty = false;
-				}
-		}
-		if(all_lists_empty) 
-		{
-			next_target_floor = current_floor;
+		if (up_requests.isEmpty() && down_requests.isEmpty() && up_wait.isEmpty() && down_wait.isEmpty()) {
+            next_target_floor = current_floor;
 		}
 	}
 	
