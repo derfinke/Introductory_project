@@ -84,6 +84,14 @@ public class ElevatorLogic extends Thread{
 				control.closeDoor();
 				isStopwatchRunning = false;
 			}
+			else {
+				try {
+					sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 	
@@ -286,7 +294,7 @@ public class ElevatorLogic extends Thread{
 	}
 	
 	public void floor_arrived() {
-		control.openDoor();	
+			
 		isStopwatchRunning = true;
 		delete_complied_requests();
 		if(update_current_direction()) {
