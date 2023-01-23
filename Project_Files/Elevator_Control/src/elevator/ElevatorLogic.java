@@ -15,8 +15,6 @@ public class ElevatorLogic {
 	private boolean first_request = false;
 	private int init_direction;
 	private int first_floor_request;
-	private boolean down_for_up_request = false;
-	private boolean up_for_down_request = false;
 	private long time_in_ms;
 
 	private ElevatorControl control;
@@ -66,7 +64,7 @@ public class ElevatorLogic {
 	public void floor_request(int requested_direction, int target_floor) {
 		//System.out.println("wanted direction:" + requested_direction);
 //		setCurrentFloor(control.getCurrentFloor());
-		if (getCurrentDirection() == none) { // init_request
+		if (current_direction == none) { // init_request
 			if (requested_direction != none) { // from outside
 				init_direction = requested_direction; // direction after init_floor is reached
 				first_floor_request = target_floor; // save target_floor
@@ -92,19 +90,19 @@ public class ElevatorLogic {
 				current_direction = requested_direction;
 			}
 		}
-		if (requested_direction != getCurrentDirection()) { // requested direction is unequal to current_direction
-			if (getCurrentDirection() == up) {
+		if (requested_direction != current_direction) { // requested direction is unequal to current_direction
+			if (current_direction == up) {
 				add_request(down_requests, target_floor);
 			}
-			else if (getCurrentDirection() == down){
+			else if (current_direction == down){
 				add_request(up_requests, target_floor);
 			}
 		}
 		else if (requested_direction * (target_floor - current_floor) > 0){ // if in correct direction and on the way
-			if (getCurrentDirection() == up) {
+			if (current_direction == up) {
 				add_request(up_requests, target_floor);
 			}
-			else if (getCurrentDirection() == down){
+			else if (current_direction == down){
 				add_request(down_requests, target_floor);
 			}
 		}
@@ -126,23 +124,17 @@ public class ElevatorLogic {
 
 
 	
-	private void delete_complied_requests() {
-		if (getCurrentDirection() == up || down_for_up_request) {
+	private void delete_complied_requests(boolean up_for_down_request, boolean down_for_up_request) {
+		if (current_direction == up || down_for_up_request) {
 			up_requests.removeIf(floor -> floor.equals(current_floor));
-			if(down_for_up_request) {
-				down_for_up_request = false;
-			}
 		}
-		if (getCurrentDirection() == down || up_for_down_request) {
+		if (current_direction == down || up_for_down_request) {
 			down_requests.removeIf(floor -> floor.equals(current_floor));
-			if(up_for_down_request) {
-				up_for_down_request = false;
-			}
 		}
 	}
 	
 	private boolean update_current_direction() {
-		int last_direction = getCurrentDirection();
+		int last_direction = current_direction;
 		if (wait_first_floor_arrived && current_floor == first_floor_request) {
 			current_direction = init_direction;
 			wait_first_floor_arrived = false;
@@ -159,7 +151,7 @@ public class ElevatorLogic {
 			
 			
 		}
-		if (getCurrentDirection() == down) {
+		if (current_direction == down) {
 			if (current_floor == 1) { // if elevator reached end of direction
 				current_direction = up;
 			}
@@ -168,13 +160,12 @@ public class ElevatorLogic {
 					current_direction = up;
 				}
 				else {
-					down_for_up_request = true;
-					delete_complied_requests();
+					delete_complied_requests(false, true); // down for up_request
 					update_current_direction();
 				}
 			}
 		}
-		else if (getCurrentDirection() == up) {
+		else if (current_direction == up) {
 			if (current_floor == 4) { // if elevator reached end of direction
 				current_direction = down;
 			}
@@ -183,8 +174,7 @@ public class ElevatorLogic {
 					current_direction = down;
 				}
 				else {
-					up_for_down_request = true;
-					delete_complied_requests();
+					delete_complied_requests(true, false); // up for down_request
 					update_current_direction();
 				}
 			}
@@ -199,7 +189,6 @@ public class ElevatorLogic {
 			if(down_wait.isEmpty()) {
 				return false;
 			}
-			
 			down_requests.addAll(down_wait);
 			down_wait.clear();
 			
@@ -263,28 +252,29 @@ public class ElevatorLogic {
 	
 	public void floor_arrived() {
 		
-		control.openDoor();
+		//control.openDoor();
 		
-		delete_complied_requests();
+		delete_complied_requests(false, false);
 		if(update_current_direction()) {
 			forward_wait_lists(current_direction);
 		}
-		System.out.println("floor_arrived: before update");
+		//System.out.println("floor_arrived: before update");
 		update_next_target_floor();
 		//printElevatorInfo(current_floor); //uncommment for debugging
 		
-		System.out.println("in floorArrived Event");
-		StopWatch watch = new StopWatch();
-		watch.start();
-		time_in_ms = watch.getTime();
-		
-		while(time_in_ms != 6000)
-		{
-			time_in_ms = watch.getTime();
-		}
-		
-		watch.stop();
-		control.closeDoor();
+		//System.out.println("in floorArrived Event");
+//		StopWatch watch = new StopWatch();
+//		watch.start();
+//		time_in_ms = watch.getTime();
+//		
+//		while(time_in_ms != 6000)
+//		{
+//			time_in_ms = watch.getTime();
+//		}
+//		
+//		watch.stop();
+		printElevatorInfo(current_floor);
+		//control.closeDoor();
 	}
 	
 	public int getTargetFloor()
@@ -299,10 +289,6 @@ public class ElevatorLogic {
 	
 	public int getCurrentDirection() {
 		return this.current_direction;
-	}
-	
-	public void setCurrentDirection(int direction) {
-		this.current_direction = direction;
 	}
 
 	
