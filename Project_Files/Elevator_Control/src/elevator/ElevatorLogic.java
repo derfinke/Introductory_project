@@ -2,12 +2,12 @@ package elevator;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import org.apache.commons.lang3.time.*;
 
 
 public class ElevatorLogic extends Thread{
     private static final int down = -1, up = 1, none=0;
+    private static final int request = 0, arrived = 1;
 	private int current_direction = none;
 	public int current_floor;
 	private int next_target_floor;
@@ -15,8 +15,6 @@ public class ElevatorLogic extends Thread{
 	private boolean first_request = false;
 	private int init_direction;
 	private int first_floor_request;
-	private boolean down_for_up_request = false;
-	private boolean up_for_down_request = false;
 	private long time_in_ms;
 	
 	private boolean isStopwatchRunning = false;
@@ -150,7 +148,7 @@ public class ElevatorLogic extends Thread{
 			}
 		}
 		
-		update_next_target_floor();
+		update_next_target_floor(request);
 		
 		if (first_request) {
 			first_request = false;
@@ -161,40 +159,35 @@ public class ElevatorLogic extends Thread{
 
 
 	// remove requests for the current floor if current direction corresponds to the requested direction 
-	private void delete_complied_requests() {
+	private boolean delete_complied_requests(boolean up_for_down_request, boolean down_for_up_request) {
+		boolean request_deleted = false;
 		if (current_direction == up || down_for_up_request) {
-			up_requests.removeIf(floor -> floor.equals(current_floor));
-			if(down_for_up_request) {
-				down_for_up_request = false;
-			}
+			request_deleted = up_requests.removeIf(floor -> floor.equals(current_floor));
 		}
 		if (current_direction == down || up_for_down_request) {
-			down_requests.removeIf(floor -> floor.equals(current_floor));
-			if(up_for_down_request) {
-				up_for_down_request = false;
-			}
+			request_deleted = down_requests.removeIf(floor -> floor.equals(current_floor));
 		}
+		return request_deleted;
 	}
 	
 	private boolean update_current_direction() {
 		int last_direction = current_direction;
 		if (wait_first_floor_arrived && current_floor == first_floor_request) {
 			current_direction = init_direction;
-			wait_first_floor_arrived = false;
+			//wait_first_floor_arrived = false;
 			return last_direction != current_direction;
 		}
 		if (down_requests.isEmpty() && up_requests.isEmpty()) { 
-			if(forward_wait_lists(toggleDirection())) { 		//check wait_lists from other direction. Contains requests and forwards to request list
+			if(forward_wait_lists(toggleDirection())) { //check wait_lists from other direction. Contains requests and forwards to request list
 				current_direction = toggleDirection();
-				return true;									// if yes, check direction again
+				return true;				// if yes, check direction again
 			}
 			else {
 				current_direction = none;
-			}
-		
+			}	
 		}
 		if (current_direction == down) {
-			if (current_floor == 0) { // if elevator reached end of direction
+			if (current_floor == 1) { // if elevator reached end of direction
 				current_direction = up;
 			}
 			if (down_requests.isEmpty() && !up_requests.isEmpty()) {
@@ -202,14 +195,14 @@ public class ElevatorLogic extends Thread{
 					current_direction = up;
 				}
 				else {
-					down_for_up_request = true;
-					delete_complied_requests();
-					update_current_direction();
+					if(delete_complied_requests(false, true)) { // down for up_request
+						update_current_direction(); 
+					}
 				}
 			}
 		}
 		else if (current_direction == up) {
-			if (current_floor == 3) { // if elevator reached end of direction
+			if (current_floor == 4) { // if elevator reached end of direction
 				current_direction = down;
 			}
 			if (up_requests.isEmpty() && !down_requests.isEmpty()) {
@@ -217,12 +210,14 @@ public class ElevatorLogic extends Thread{
 					current_direction = down;
 				}
 				else {
-					up_for_down_request = true;
-					delete_complied_requests();
-					update_current_direction();
+					if (delete_complied_requests(true, false)) { // up for down_request
+						update_current_direction();
+					}
+					
 				}
 			}
 		}
+		
 		return last_direction != current_direction;
 	}
 	
@@ -261,47 +256,66 @@ public class ElevatorLogic extends Thread{
 		}
 	}
 	
-	private void update_next_target_floor() {		
+	private void update_next_target_floor(int origin) {		
+		int targetBuffer = current_floor;
 		if (current_direction == up) {
 			if(!up_requests.isEmpty()) {
-				next_target_floor = Collections.min(up_requests); //choose lowest request, that is still above current floor
+				targetBuffer = Collections.min(up_requests); //choose lowest request, that is still above current floor
 				System.out.println("In next Target Floor Up");
 			}
 			else if(!down_requests.isEmpty()){ //if no more up_requests check for highest down_request target, that is still above current floor
 				int max_down_request = Collections.max(down_requests);
 				if(max_down_request > current_floor) {
-					next_target_floor = max_down_request;
-					System.out.println("In next Target Floor Up für down request");
+					targetBuffer = max_down_request;
 				}
 			}
 		}
 		else if(current_direction == down) {
 			if(!down_requests.isEmpty()) {
-				next_target_floor = Collections.max(down_requests); //choose highest request, that is still below current floor
+				targetBuffer = Collections.max(down_requests); //choose highest request, that is still below current floor
 				System.out.println("In next Target Floor Down");
 			}
 			else if(!up_requests.isEmpty()){ //if no more down_requests check for lowest up_request target, that is still below current floor
-                int min_up_request = Collections.min(up_requests);
-                if(min_up_request < current_floor) {
-                    next_target_floor = min_up_request;
-                }
-            }
+				int min_up_request = Collections.min(up_requests);
+				if(min_up_request < current_floor) {
+					
+					targetBuffer = min_up_request;
+				}
+			}
 		}
-				// Check if all Lists are empty, then set target floor to current floor -> no movement
-		if (up_requests.isEmpty() && down_requests.isEmpty() && up_wait.isEmpty() && down_wait.isEmpty()) {
-            next_target_floor = current_floor;
+		
+		// Check if all Lists are empty, then set target floor to current floor -> no movement
+		if (up_requests.isEmpty() && down_requests.isEmpty() && up_wait.isEmpty() && down_wait.isEmpty())
+			targetBuffer = current_floor;
+		
+		if(!wait_first_floor_arrived || origin == request) {
+			next_target_floor = targetBuffer;
+		}
+		else{
+			if (origin == arrived && first_floor_request == current_floor) {
+				if (init_direction * (targetBuffer - current_floor) > 0) {
+					next_target_floor = targetBuffer;
+				}
+				else {
+					next_target_floor = current_floor;
+				}
+				wait_first_floor_arrived = false;
+			}
+			else {
+				next_target_floor = targetBuffer;
+			}
 		}
 	}
 	
 	public void floor_arrived() {
 			
 		isStopwatchRunning = true;
-		delete_complied_requests();
+		delete_complied_requests(false, false);
 		if(update_current_direction()) {
 			forward_wait_lists(current_direction);
 		};
 		System.out.println("floor_arrived: before update");
-		update_next_target_floor();
+		update_next_target_floor(arrived);
 		System.out.println("in floorArrived Event");
 		
 		printElevatorInfo("floorArrived"); 
