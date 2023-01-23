@@ -83,7 +83,6 @@ public class ElevatorLogic {
 				requested_direction = down;
 			}
 			else if(target_floor == current_floor) {
-				System.out.println("Door open, closes");
 				floor_arrived();
 			}
 			if(first_request) {
@@ -106,11 +105,11 @@ public class ElevatorLogic {
 				add_request(down_requests, target_floor);
 			}
 		}
-		else { //If right direction but not on the current way
-			if (current_floor > target_floor && current_direction == up) {					
+		else if (!first_request) { //If right direction but not on the current way
+			if (current_direction == up) {					
 				add_request(up_wait, target_floor); //was up_wait
 			}
-			else if (current_floor < target_floor && current_direction == down){			
+			else if (current_direction == down){			
 				add_request(down_wait, target_floor); //was down_wait
 			}
 		}
@@ -226,7 +225,6 @@ public class ElevatorLogic {
 				int max_down_request = Collections.max(down_requests);
 				if(max_down_request > current_floor) {
 					next_target_floor = max_down_request;
-					System.out.println("In next Target Floor Up für down request");
 				}
 			}
 		}
@@ -235,25 +233,23 @@ public class ElevatorLogic {
 				next_target_floor = Collections.max(down_requests); //choose highest request, that is still below current floor
 				System.out.println("In next Target Floor Down");
 			}
+			else if(!up_requests.isEmpty()){ //if no more down_requests check for lowest up_request target, that is still below current floor
+				int min_up_request = Collections.min(up_requests);
+				if(min_up_request < current_floor) {
+					next_target_floor = min_up_request;
+				}
+			}
 		}
 		
 		// Check if all Lists are empty, then set target floor to current floor -> no movement
-		List<List<Integer>> list_complete = Arrays.asList(up_requests,up_wait,down_requests,down_wait);
-		boolean all_lists_empty = true;
-		for(int i=0; i < 4; i++) {
-			if(!list_complete.get(i).isEmpty()) {
-				all_lists_empty = false;
-			}
-		}
-		if(all_lists_empty) {
+		if (up_requests.isEmpty() && down_requests.isEmpty() && up_wait.isEmpty() && down_wait.isEmpty())
 			next_target_floor = current_floor;
-		}
 	}
 	
 	public void floor_arrived() {
 		
 		//control.openDoor();
-		
+		System.out.printf("door opens\n");
 		delete_complied_requests(false, false);
 		if(update_current_direction()) {
 			forward_wait_lists(current_direction);
