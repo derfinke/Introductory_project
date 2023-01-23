@@ -56,7 +56,6 @@ public class MQTT_Client {
 		String payload = new String(msg.getPayload());
 		JSONObject json = new JSONObject(payload);
 		String[] keys = JSONObject.getNames(json);
-//		String timeStamp = json.getString("timestamp");
 		int floor;
 		String doorState;
 		boolean resetElevator;

@@ -17,6 +17,7 @@ public class Main {
     	subscriber.subscribe("/22WS-SysArch/H2/Testing");
     	control.passMqtt(subscriber);
     	control.hard_reset();
+    	control.setName("Control");
     	control.start();
     }
 }
