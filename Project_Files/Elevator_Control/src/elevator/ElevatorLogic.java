@@ -2,7 +2,6 @@ package elevator;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import org.apache.commons.lang3.time.*;
 
 
@@ -294,7 +293,7 @@ public class ElevatorLogic extends Thread{
 	}
 	
 	public void floor_arrived() {
-			
+		control.openDoor();	
 		isStopwatchRunning = true;
 		delete_complied_requests();
 		if(update_current_direction()) {
