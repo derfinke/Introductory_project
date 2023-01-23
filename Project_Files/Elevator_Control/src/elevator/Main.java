@@ -1,21 +1,25 @@
 package elevator;
-
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import mqtt.MQTT_Client;
 
 public class Main {
 	
-	private static ElevatorControl control;
+//	private static ElevatorControl control;
+//	private static StopWatch myStopWatch;
+//	private static ElevatorLogic logic;
 	
-	private static void mockEvent(String topic, String payload) throws Exception {
-		control.eventHandler.messageArrived(topic, new MqttMessage(payload.getBytes()));
-	}
-
     public static void main(String[] args) throws Exception {
-    	control = new ElevatorControl();
-	    MQTT_Client client = new MQTT_Client("elevator control", "tcp://192.168.0.172:1883", control.eventHandler);
-		client.connect();
-		client.subscribe("#");
-	    control.referenceClient(client);
-	    mockEvent("topic", "payload");
+    	ElevatorLogic logic = new ElevatorLogic();
+    	ElevatorControl control  = new ElevatorControl(logic);
+//    	control.reset();
+    	logic.initControl(control);
+    	MQTT_Client subscriber = new MQTT_Client("C2", "tcp://ea-pc165.ei.htwg-konstanz.de:1883", logic, control);
+    	subscriber.connect();
+    	subscriber.subscribe("/22WS-SysArch/H2");
+    	control.passMqtt(subscriber);
+    	control.hard_reset();
+    	control.setName("Control");
+    	logic.setName("Stopwatch");
+    	control.start();
+    	logic.start();
     }
 }
