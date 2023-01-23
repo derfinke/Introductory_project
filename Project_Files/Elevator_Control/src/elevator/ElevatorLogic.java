@@ -17,6 +17,7 @@ public class ElevatorLogic {
 	private int init_direction;
 	private int first_floor_request;
 	private long time_in_ms;
+	
 
 	private ElevatorControl control;
 	
@@ -127,13 +128,15 @@ public class ElevatorLogic {
 
 
 	
-	private void delete_complied_requests(boolean up_for_down_request, boolean down_for_up_request) {
+	private boolean delete_complied_requests(boolean up_for_down_request, boolean down_for_up_request) {
+		boolean request_deleted = false;
 		if (current_direction == up || down_for_up_request) {
-			up_requests.removeIf(floor -> floor.equals(current_floor));
+			request_deleted = up_requests.removeIf(floor -> floor.equals(current_floor));
 		}
 		if (current_direction == down || up_for_down_request) {
-			down_requests.removeIf(floor -> floor.equals(current_floor));
+			request_deleted = down_requests.removeIf(floor -> floor.equals(current_floor));
 		}
+		return request_deleted;
 	}
 	
 	private boolean update_current_direction() {
@@ -163,8 +166,9 @@ public class ElevatorLogic {
 					current_direction = up;
 				}
 				else {
-					delete_complied_requests(false, true); // down for up_request
-					update_current_direction();
+					if(delete_complied_requests(false, true)) { // down for up_request
+						update_current_direction(); 
+					}
 				}
 			}
 		}
@@ -177,8 +181,10 @@ public class ElevatorLogic {
 					current_direction = down;
 				}
 				else {
-					delete_complied_requests(true, false); // up for down_request
-					update_current_direction();
+					if (delete_complied_requests(true, false)) { // up for down_request
+						update_current_direction();
+					}
+					
 				}
 			}
 		}
@@ -252,18 +258,21 @@ public class ElevatorLogic {
 		if (up_requests.isEmpty() && down_requests.isEmpty() && up_wait.isEmpty() && down_wait.isEmpty())
 			targetBuffer = current_floor;
 		
-		if(!wait_first_floor_arrived) {
+		if(!wait_first_floor_arrived || origin == request) {
 			next_target_floor = targetBuffer;
 		}
 		else{
-			if(init_direction * (targetBuffer - current_floor) > 0) {
-				next_target_floor = targetBuffer;
+			if (origin == arrived && first_floor_request == current_floor) {
+				if (init_direction * (targetBuffer - current_floor) > 0) {
+					next_target_floor = targetBuffer;
+				}
+				else {
+					next_target_floor = current_floor;
+				}
+				wait_first_floor_arrived = false;
 			}
 			else {
-				next_target_floor = current_floor;
-			}
-			if(origin == arrived) {
-				wait_first_floor_arrived = false;
+				next_target_floor = targetBuffer;
 			}
 		}
 	}
