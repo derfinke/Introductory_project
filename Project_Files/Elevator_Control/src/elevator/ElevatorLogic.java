@@ -29,14 +29,14 @@ public class ElevatorLogic {
 	public void FloorEventHandler(String key, int floor){
 		switch(key) {
 			case "stopButtonDown":
-				floor_request(down, floor);
+				floor_request(down, floor, key);
 				break;
 			case "stopButtonUp":
-				floor_request(up, floor);
+				floor_request(up, floor, key);
 				System.out.println("in StopButtonUp Event");
 				break;
 			case "floorSelection":
-				floor_request(none, floor);
+				floor_request(none, floor, key);
 				break;
 			case "floorArrived":
 				floor_arrived();
@@ -63,20 +63,22 @@ public class ElevatorLogic {
 		if (!list.contains(floor)) list.add(floor);
 	}
 	
-	public void floor_request(int requested_direction, int target_floor) {
-		//System.out.println("wanted direction:" + requested_direction);
-		//setCurrentFloor(control.getCurrentFloor());
-		if (getCurrentDirection() == none) { // init_request
-			if (requested_direction != none) { // from outside
-				init_direction = requested_direction; // direction after init_floor is reached
-				first_floor_request = target_floor; // save target_floor
-				wait_first_floor_arrived = true; //flag to block new requests from changing the next_target_floor until the init_floor is reached
+	public void floor_request(int requested_direction, int target_floor, String key) {
+		
+		// first request when all lists have been empty -> current_direction = not set (none)
+		if (current_direction == none){ 
+			if (requested_direction != none) { 			// from outside
+				init_direction = requested_direction; 	// direction after first request has been reached
+				first_floor_request = target_floor; 	// save target_floor
+				wait_first_floor_arrived = true; 		// flag to block new requests from changing the next_target_floor until the init_floor is reached
 				first_request = true;
 			}
+			// request from inside the elevator cabin
 			else {
 				first_request = true;
 			}
-		}
+		} 
+		// set direction if current_direction is not set yet
 		if(requested_direction == none || first_request) {
 			if (target_floor - current_floor > 0) {
 				requested_direction = up;
@@ -88,48 +90,53 @@ public class ElevatorLogic {
 				current_direction = requested_direction;
 			}
 		}
-		if (requested_direction != getCurrentDirection()) { // requested direction is unequal to current_direction
-			if (getCurrentDirection() == up) {
+		// requested direction is unequal to current_direction
+		if (requested_direction != current_direction) { 
+			if (current_direction == up) {
 				add_request(down_requests, target_floor);
 			}
-			else if (getCurrentDirection() == down){
+			else if (current_direction == down){
 				add_request(up_requests, target_floor);
 			}
 		}
-		else if (requested_direction * (target_floor - current_floor) > 0){ // if in correct direction and on the way
-			if (getCurrentDirection() == up) {
+		// if in correct direction and on the way
+		else if (requested_direction * (target_floor - current_floor) > 0){ 
+			if (current_direction == up) {
 				add_request(up_requests, target_floor);
 			}
-			else if (getCurrentDirection() == down){
+			else if (current_direction == down){
 				add_request(down_requests, target_floor);
 			}
 		}
-		else { //If right direction but not on the current way
-			if (current_floor > target_floor && current_direction == up) {					
-				add_request(up_wait, target_floor); //was up_wait
+		// if right direction but not on the current way
+		else { 
+			if (current_direction == up) {
+				add_request(up_wait, target_floor); 
 			}
-			else if (current_floor < target_floor && current_direction == down){			
-				add_request(down_wait, target_floor); //was down_wait
+			else if (current_direction == down){ 		
+				add_request(down_wait, target_floor); 
 			}
 		}
+		
 		update_next_target_floor();
 		
 		if (first_request) {
 			first_request = false;
 		}
-		printElevatorInfo(current_floor); //comment for debugging in testbench
+		
+		printElevatorInfo(key);
 	}
 
 
-	
+	// remove requests for the current floor if current direction corresponds to the requested direction 
 	private void delete_complied_requests() {
-		if (getCurrentDirection() == up || down_for_up_request) {
+		if (current_direction == up || down_for_up_request) {
 			up_requests.removeIf(floor -> floor.equals(current_floor));
 			if(down_for_up_request) {
 				down_for_up_request = false;
 			}
 		}
-		if (getCurrentDirection() == down || up_for_down_request) {
+		if (current_direction == down || up_for_down_request) {
 			down_requests.removeIf(floor -> floor.equals(current_floor));
 			if(up_for_down_request) {
 				up_for_down_request = false;
@@ -138,24 +145,23 @@ public class ElevatorLogic {
 	}
 	
 	private boolean update_current_direction() {
-		int last_direction = getCurrentDirection();
+		int last_direction = current_direction;
 		if (wait_first_floor_arrived && current_floor == first_floor_request) {
 			current_direction = init_direction;
 			wait_first_floor_arrived = false;
 			return last_direction != current_direction;
 		}
 		if (down_requests.isEmpty() && up_requests.isEmpty()) { 
-			if(forward_wait_lists(toggleDirection())) { //check wait_lists from other direction. Contains requests and forwards to request list
+			if(forward_wait_lists(toggleDirection())) { 		//check wait_lists from other direction. Contains requests and forwards to request list
 				current_direction = toggleDirection();
-				return true;				// if yes, check direction again
+				return true;									// if yes, check direction again
 			}
 			else {
 				current_direction = none;
 			}
-			
-			
+		
 		}
-		if (getCurrentDirection() == down) {
+		if (current_direction == down) {
 			if (current_floor == 1) { // if elevator reached end of direction
 				current_direction = up;
 			}
@@ -170,7 +176,7 @@ public class ElevatorLogic {
 				}
 			}
 		}
-		else if (getCurrentDirection() == up) {
+		else if (current_direction == up) {
 			if (current_floor == 4) { // if elevator reached end of direction
 				current_direction = down;
 			}
@@ -278,14 +284,13 @@ public class ElevatorLogic {
 			
 		watch.stop();
 		control.closeDoor();
-		//printElevatorInfo(current_floor); //uncommment for debugging
+		printElevatorInfo("floorArrived"); 
 	}
 	
 	public int getTargetFloor()
 	{
 		return this.next_target_floor;
 	}
-	
 	
 	public void setCurrentFloor(int floor) {
 		this.current_floor = floor;
@@ -295,26 +300,18 @@ public class ElevatorLogic {
 		return this.current_direction;
 	}
 	
-	public void setCurrentDirection(int direction) {
-		this.current_direction = direction;
-	}
-
-	
 	public void initControl(ElevatorControl control)
 	{
 		this.control = control;
 	}
 	
-	
-	
-	
-	public void printElevatorInfo(int floor) {
+	public void printElevatorInfo(String event) {
         for(int i=0;i<15;i++) {
-            System.out.printf("");
+            System.out.printf("_");
         }
-        System.out.printf("\nTESTOUTPUT: (floor " + floor + ")\n");
+        System.out.printf("\nTESTOUTPUT: (Event: " + event + ")\n");
         for(int i=0;i<15;i++) {
-            System.out.printf("");
+            System.out.printf("_");
         }
         System.out.printf("\n");
 
@@ -335,8 +332,9 @@ public class ElevatorLogic {
             System.out.printf("%d\n", up_wait.get(i));
         }
 
-        System.out.printf("\nnext target: %d\n", getTargetFloor());
-        System.out.printf("Current direction: %d\n", getCurrentDirection());
+        System.out.printf("\nNext target: %d\n", next_target_floor);
+        System.out.printf("\nCurrent floor: %d\n", current_floor);
+        System.out.printf("\nCurrent direction: %d\n", current_direction);
     }
 	
 }

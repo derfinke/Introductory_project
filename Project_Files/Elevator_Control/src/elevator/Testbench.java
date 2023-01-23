@@ -20,7 +20,7 @@
 //		//JSONObject json = new JSONObject();
 ////		json.put("floorArrived", "");
 ////		json.put("timestamp", "kurz vor knapp");
-//		//logic.mockEvent("", json);
+////		logic.mockEvent("", json);
 //	   
 //	
 //    	logic.current_floor = 4;
@@ -88,10 +88,7 @@
 //    	logic.current_floor = 2;
 //    	mockFloorEvent("floorArrived", 0);
 //    	logic.printElevatorInfo(logic.current_floor);
-//    	*/
-//    	
-//    	
-//    
+//    	*/  
 //	}
 //}
 //
