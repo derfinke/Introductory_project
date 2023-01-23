@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.apache.commons.lang3.time.*;
 
 
-public class ElevatorLogic {
+public class ElevatorLogic extends Thread{
     private static final int down = -1, up = 1, none=0;
 	private int current_direction = none;
 	public int current_floor;
@@ -18,6 +18,8 @@ public class ElevatorLogic {
 	private boolean down_for_up_request = false;
 	private boolean up_for_down_request = false;
 	private long time_in_ms;
+	
+	private boolean isStopwatchRunning = false;
 
 	private ElevatorControl control;
 	
@@ -61,6 +63,28 @@ public class ElevatorLogic {
 	
 	private void add_request(List<Integer> list, int floor) {
 		if (!list.contains(floor)) list.add(floor);
+	}
+	
+	@Override
+	public void run()
+	{
+		StopWatch watch = new StopWatch();
+		while(true)
+		{
+			if(isStopwatchRunning) 
+			{
+				watch.start();
+				time_in_ms = watch.getTime();
+				
+				while(time_in_ms <= 6000)
+				{
+					time_in_ms = watch.getTime();
+				}
+				watch.reset();
+				control.closeDoor();
+				isStopwatchRunning = false;
+			}
+		}
 	}
 	
 	public void floor_request(int requested_direction, int target_floor, String key) {
@@ -264,8 +288,8 @@ public class ElevatorLogic {
 	}
 	
 	public void floor_arrived() {
-		control.openDoor();
-		
+		control.openDoor();	
+		isStopwatchRunning = true;
 		delete_complied_requests();
 		if(update_current_direction()) {
 			forward_wait_lists(current_direction);
@@ -273,17 +297,7 @@ public class ElevatorLogic {
 		System.out.println("floor_arrived: before update");
 		update_next_target_floor();
 		System.out.println("in floorArrived Event");
-		StopWatch watch = new StopWatch();
-		watch.start();
-		time_in_ms = watch.getTime();
-				
-		while(time_in_ms != 6000)
-		{
-			time_in_ms = watch.getTime();
-		}
-			
-		watch.stop();
-		control.closeDoor();
+		
 		printElevatorInfo("floorArrived"); 
 	}
 	

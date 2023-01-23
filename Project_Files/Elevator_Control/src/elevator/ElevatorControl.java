@@ -50,7 +50,7 @@ public class ElevatorControl extends Thread{
     private boolean m_on;
     private boolean m_error;
     private int	previous_floor;
-    
+    private StopWatch watch = new StopWatch();
     private int current_floor;
     private boolean arrived_floor_flag;
     private boolean elevator_is_moving;
@@ -152,36 +152,35 @@ public class ElevatorControl extends Thread{
     		}
     		if(request_door_state)
     		{
-    			try {
-    				if(s_dopened)
-    				{
-    					jsonObject.put("timestamp", now);
-    					jsonObject.put("doorState", "open");
-    					publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
-						jsonObject.remove("timestamp");
-						jsonObject.remove("doorState");
-						lock.lock();
-    					request_door_state = false;
-    					lock.unlock();
-    				}
-    				else if(s_dclosed)
-    				{
-    					jsonObject.put("timestamp", now);
-    					jsonObject.put("doorState", "closed");
-    					publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
-						jsonObject.remove("timestamp");
-						jsonObject.remove("doorState");
-						lock.lock();
-    					request_door_state = false;
-    					lock.unlock();
-    				}
-    			}
-    			catch(Exception e)
+
+    			if(watch.getTime() >= 3000)
     			{
-    				e.printStackTrace();
+    				watch.reset();
+    				try {
+	    				if(s_dopened)
+	    				{
+	    					jsonObject.put("timestamp", now);
+	    					jsonObject.put("doorState", "open");
+	    					publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
+	    				}
+	    				else if(s_dclosed)
+	    				{
+	    					jsonObject.put("timestamp", now);
+	    					jsonObject.put("doorState", "closed");
+	    					publisher.publish("/22WS-SysArch/H2/Testing", jsonObject.toString());
+	    				}
+						jsonObject.remove("timestamp");
+						jsonObject.remove("doorState");
+						lock.lock();
+    					request_door_state = false;
+    					lock.unlock();
+	    			}
+	    			catch(Exception e)
+	    			{
+	    				e.printStackTrace();
+	    			}
     			}
-    			
-    		}
+    		}	
     	}
 	}
 	
@@ -247,6 +246,7 @@ public class ElevatorControl extends Thread{
 				lock.lock();
 				request_door_state = true;
 				lock.unlock();
+				watch.start();
 			}
 			else
 			{
@@ -275,6 +275,7 @@ public class ElevatorControl extends Thread{
 				lock.lock();
 				request_door_state = true;
 				lock.unlock();
+				watch.start();
 			}
 			else
 			{

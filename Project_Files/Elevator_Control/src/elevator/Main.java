@@ -18,6 +18,8 @@ public class Main {
     	control.passMqtt(subscriber);
     	control.hard_reset();
     	control.setName("Control");
+    	logic.setName("Stopwatch");
     	control.start();
+    	logic.start();
     }
 }
