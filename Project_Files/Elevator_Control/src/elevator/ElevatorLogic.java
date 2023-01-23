@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 public class ElevatorLogic {
     private static final int down = -1, up = 1, none=0;
+    private static final int request = 0, arrived = 1;
 	private int current_direction = none;
 	public int current_floor;
 	private int next_target_floor;
@@ -62,6 +63,8 @@ public class ElevatorLogic {
 	}
 	
 	public void floor_request(int requested_direction, int target_floor) {
+		
+		
 		//System.out.println("wanted direction:" + requested_direction);
 //		setCurrentFloor(control.getCurrentFloor());
 		if (current_direction == none) { // init_request
@@ -113,7 +116,8 @@ public class ElevatorLogic {
 				add_request(down_wait, target_floor); //was down_wait
 			}
 		}
-		update_next_target_floor();
+		
+		update_next_target_floor(request);
 		
 		if (first_request) {
 			first_request = false;
@@ -136,7 +140,7 @@ public class ElevatorLogic {
 		int last_direction = current_direction;
 		if (wait_first_floor_arrived && current_floor == first_floor_request) {
 			current_direction = init_direction;
-			wait_first_floor_arrived = false;
+			//wait_first_floor_arrived = false;
 			return last_direction != current_direction;
 		}
 		if (down_requests.isEmpty() && up_requests.isEmpty()) { 
@@ -178,6 +182,7 @@ public class ElevatorLogic {
 				}
 			}
 		}
+		
 		return last_direction != current_direction;
 	}
 	
@@ -215,35 +220,52 @@ public class ElevatorLogic {
 		}
 	}
 	
-	private void update_next_target_floor() {		
+	private void update_next_target_floor(int origin) {		
+		int targetBuffer = current_floor;
 		if (current_direction == up) {
 			if(!up_requests.isEmpty()) {
-				next_target_floor = Collections.min(up_requests); //choose lowest request, that is still above current floor
+				targetBuffer = Collections.min(up_requests); //choose lowest request, that is still above current floor
 				System.out.println("In next Target Floor Up");
 			}
 			else if(!down_requests.isEmpty()){ //if no more up_requests check for highest down_request target, that is still above current floor
 				int max_down_request = Collections.max(down_requests);
 				if(max_down_request > current_floor) {
-					next_target_floor = max_down_request;
+					targetBuffer = max_down_request;
 				}
 			}
 		}
 		else if(current_direction == down) {
 			if(!down_requests.isEmpty()) {
-				next_target_floor = Collections.max(down_requests); //choose highest request, that is still below current floor
+				targetBuffer = Collections.max(down_requests); //choose highest request, that is still below current floor
 				System.out.println("In next Target Floor Down");
 			}
 			else if(!up_requests.isEmpty()){ //if no more down_requests check for lowest up_request target, that is still below current floor
 				int min_up_request = Collections.min(up_requests);
 				if(min_up_request < current_floor) {
-					next_target_floor = min_up_request;
+					
+					targetBuffer = min_up_request;
 				}
 			}
 		}
 		
 		// Check if all Lists are empty, then set target floor to current floor -> no movement
 		if (up_requests.isEmpty() && down_requests.isEmpty() && up_wait.isEmpty() && down_wait.isEmpty())
-			next_target_floor = current_floor;
+			targetBuffer = current_floor;
+		
+		if(!wait_first_floor_arrived) {
+			next_target_floor = targetBuffer;
+		}
+		else{
+			if(init_direction * (targetBuffer - current_floor) > 0) {
+				next_target_floor = targetBuffer;
+			}
+			else {
+				next_target_floor = current_floor;
+			}
+			if(origin == arrived) {
+				wait_first_floor_arrived = false;
+			}
+		}
 	}
 	
 	public void floor_arrived() {
@@ -255,7 +277,7 @@ public class ElevatorLogic {
 			forward_wait_lists(current_direction);
 		}
 		//System.out.println("floor_arrived: before update");
-		update_next_target_floor();
+		update_next_target_floor(arrived);
 		//printElevatorInfo(current_floor); //uncommment for debugging
 		
 		//System.out.println("in floorArrived Event");

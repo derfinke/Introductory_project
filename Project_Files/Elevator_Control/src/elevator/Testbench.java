@@ -2,13 +2,22 @@ package elevator;
 
 public class Testbench{
 	public Testbench(ElevatorLogic logic) throws Exception {
+		
     	logic.current_floor = 1;
     	logic.FloorEventHandler("stopButtonDown", 3);
+    	logic.FloorEventHandler("stopButtonUp", 2);
     	logic.current_floor = 2;
-    	logic.FloorEventHandler("stopButtonDown", 4);
+    	logic.FloorEventHandler("floorArrived", 0);
+    	logic.FloorEventHandler("floorSelection", 4);
     	logic.current_floor = 3;
     	logic.FloorEventHandler("floorArrived", 0);
-    	logic.FloorEventHandler("stopButtonDown", 2);
+    	
+    	//logic.FloorEventHandler("floorSelection", 4);
+    	/*
+    	logic.current_floor = 4;
+    	logic.FloorEventHandler("floorArrived", 0);
+    	
+    	//logic.FloorEventHandler("stopButtonDown", 2);
     	
     	/*
     	
