@@ -14,7 +14,7 @@ public class Main {
     	logic.initControl(control);
     	MQTT_Client subscriber = new MQTT_Client("C2", "tcp://ea-pc165.ei.htwg-konstanz.de:1883", logic, control);
     	subscriber.connect();
-    	subscriber.subscribe("/22WS-SysArch/H2/lul");
+    	subscriber.subscribe("/22WS-SysArch/H2");
     	control.passMqtt(subscriber);
     	control.hard_reset();
     	control.setName("Control");
