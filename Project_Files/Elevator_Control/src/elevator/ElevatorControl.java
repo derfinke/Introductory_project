@@ -1,31 +1,22 @@
 package elevator;
-
 import java.io.IOException;
 import java.net.UnknownHostException;
-
 import java.time.*;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
 import mqtt.MQTT_Client;
-
 import java.util.concurrent.locks.*;
-
-import org.apache.commons.lang3.time.*;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 public class ElevatorControl extends Thread {
 
 	private ModbusClient client;
-//	private boolean DoorIsOpen;
-//	private boolean DoorIsClosed;
-//	private boolean MotorIsReady;
-//	private boolean MotorIsOn;
-//    private boolean ErrorState;
 	private ElevatorLogic logic;
-
+	private MQTT_Client publisher;
+	private ReentrantLock lock = new ReentrantLock(true);
+	
 	private boolean s_l1sl;
 	private boolean s_l1r;
 	private boolean s_l1su;
@@ -48,15 +39,15 @@ public class ElevatorControl extends Thread {
 	private boolean s_dclosed;
 	private boolean m_ready;
 	private boolean m_on;
-	private boolean m_error;
-	private int previous_floor;
-	private int current_floor;
+	private boolean m_error;	
 	private boolean arrived_floor_flag;
 	private boolean elevator_is_moving;
 	private boolean request_door_state;
+	private int previous_floor;
+	private int current_floor;
 	private int Direction = 0;
 	private int wishedFloor = -1;
-
+  
 	private LocalDateTime now = LocalDateTime.now();
 	private MQTT_Client publisher;
 
@@ -66,39 +57,10 @@ public class ElevatorControl extends Thread {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de", 506);
 		client.Connect();
 		this.logic = logic;
-//		if(current_floor == 0)
-//		{
-//			reset();
-//			current_floor = 1;
-//		}
-
 	}
 
 	public void passMqtt(MQTT_Client publisher) {
 		this.publisher = publisher;
-	}
-
-	public boolean getDoorIsOpen() {
-		return s_dopened;
-	}
-
-	public void setDoorIsOpen(boolean doorIsOpen) {
-		s_dopened = doorIsOpen;
-	}
-
-	public boolean getDoorIsClosed() {
-		return s_dclosed;
-	}
-
-	public void setDoorIsClosed(boolean doorIsClosed) {
-		s_dclosed = doorIsClosed;
-	}
-
-	public boolean getErrorState() {
-		return m_error;
-	}
-
-	public void setErrorState(boolean errorState) {
 	}
 
 	@Override
@@ -112,7 +74,6 @@ public class ElevatorControl extends Thread {
 			wishedFloor = logic.getTargetFloor();
 			Direction = logic.getCurrentDirection();
 			readSensor();
-			// Direction = Logic_Object.getCurrentDirection();
 			if (wishedFloor != -1) {
 				previous_floor = current_floor;
 				setCurrentFloor(Direction);
@@ -284,8 +245,6 @@ public class ElevatorControl extends Thread {
 				// stop door opening / closing
 				client.WriteSingleCoil(12, false);
 				client.WriteSingleCoil(13, false);
-//
-
 				JSONObject jsonObject = new JSONObject();
 				jsonObject.put("timestamp", LocalDateTime.now());
 				jsonObject.put("errorState", "error");
@@ -295,7 +254,6 @@ public class ElevatorControl extends Thread {
 				reset();
 			}
 		} catch (ModbusException | IOException | JSONException | MqttException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -340,16 +298,6 @@ public class ElevatorControl extends Thread {
 		lock.unlock();
 	}
 
-	public void printSensorValues() {
-		System.out.println("s_l1sl = " + s_l1sl + " | s_l1r = " + s_l1r + " | s_l1su = " + s_l1su + " | s_l1au = "
-				+ s_l1au + " | s_l2al = " + s_l2al + " | s_l2sl = " + s_l2sl + " | s_l2r = " + s_l2r + " | s_l2su = "
-				+ s_l2su + " | s_l2au = " + s_l2au + " | s_l3al = " + s_l3al + " | s_l3sl = " + s_l3sl + " | s_l3r = "
-				+ s_l3r + " | s_l3su = " + s_l3su + " | s_l3au = " + s_l3au + " | s_l4al = " + s_l4al + " | s_l4sl = "
-				+ s_l4sl + " | s_l4r = " + s_l4r + " | s_l4su = " + s_l4su + " | s_dopened = " + s_dopened
-				+ " | s_dclosed = " + s_dclosed + " | m_ready = " + m_ready + " | m_on = " + m_on + " | m_error = "
-				+ m_error);
-	}
-
 	public void motorV2Up() {
 		try {
 			lock.lock();
@@ -387,7 +335,7 @@ public class ElevatorControl extends Thread {
 
 	}
 
-	synchronized public int getCurrentFloor() {
+	public int getCurrentFloor() {
 		lock.lock();
 		int floor = current_floor;
 		lock.unlock();
@@ -439,8 +387,6 @@ public class ElevatorControl extends Thread {
 	}
 
 	public void ApproachStop(int stop, int Direction) throws Exception {
-		// long time_ms = 0;
-		// StopWatch myStopWatch = new StopWatch();
 		if (Direction == 1) {
 			switch (stop) {
 			case 1:
@@ -569,9 +515,5 @@ public class ElevatorControl extends Thread {
 		boolean arrived = arrived_floor_flag;
 		lock.unlock();
 		return arrived;
-	}
-
-	public boolean getRequestDoorState() {
-		return request_door_state;
 	}
 }
