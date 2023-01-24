@@ -76,7 +76,6 @@ public class ElevatorControl extends Thread {
 			wishedFloor = logic.getTargetFloor();
 			Direction = logic.getCurrentDirection();
 			readSensor();
-			// Direction = Logic_Object.getCurrentDirection();
 			if (wishedFloor != -1) {
 				previous_floor = current_floor;
 				setCurrentFloor(Direction);
