@@ -147,14 +147,14 @@ public class ElevatorControl extends Thread {
 						jsonObject.put("doorStatus", "open");
 						publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
 						jsonObject.remove("timestamp");
-						jsonObject.remove("doorState");
+						jsonObject.remove("doorStatus");
 						request_door_state = false;
 					} else if (s_dclosed && !s_dopened) {
 						jsonObject.put("timestamp", LocalDateTime.now());
 						jsonObject.put("doorStatus", "closed");
 						publisher.publish("/22WS-SysArch/C2", jsonObject.toString());
 						jsonObject.remove("timestamp");
-						jsonObject.remove("doorState");
+						jsonObject.remove("doorStatus");
 						request_door_state = false;
 					}
 					lock.unlock();
