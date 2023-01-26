@@ -14,7 +14,9 @@ public class ElevatorControl extends Thread {
 
 	private ModbusClient client;
 	private ElevatorLogic logic;
-
+	private MQTT_Client publisher;
+	private ReentrantLock lock = new ReentrantLock(true);
+	
 	private boolean s_l1sl;
 	private boolean s_l1r;
 	private boolean s_l1su;
@@ -37,28 +39,19 @@ public class ElevatorControl extends Thread {
 	private boolean s_dclosed;
 	private boolean m_ready;
 	private boolean m_on;
-	private boolean m_error;
-	private int previous_floor;
-	private int current_floor;
+	private boolean m_error;	
 	private boolean arrived_floor_flag;
 	private boolean elevator_is_moving;
 	private boolean request_door_state;
+	private int previous_floor;
+	private int current_floor;
 	private int Direction = 0;
 	private int wishedFloor = -1;
-	
-	private MQTT_Client publisher;
-	private ReentrantLock lock = new ReentrantLock(true);
 
 	public ElevatorControl(ElevatorLogic logic) throws UnknownHostException, IOException {
 		client = new ModbusClient("ea-pc111.ei.htwg-konstanz.de", 506);
 		client.Connect();
 		this.logic = logic;
-//		if(current_floor == 0)
-//		{
-//			reset();
-//			current_floor = 1;
-//		}
-
 	}
 
 	public void passMqtt(MQTT_Client publisher) {
@@ -247,8 +240,6 @@ public class ElevatorControl extends Thread {
 				// stop door opening / closing
 				client.WriteSingleCoil(12, false);
 				client.WriteSingleCoil(13, false);
-//
-
 				JSONObject jsonObject = new JSONObject();
 				jsonObject.put("timestamp", LocalDateTime.now());
 				jsonObject.put("errorState", "error");
@@ -258,7 +249,6 @@ public class ElevatorControl extends Thread {
 				reset();
 			}
 		} catch (ModbusException | IOException | JSONException | MqttException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -385,8 +375,6 @@ public class ElevatorControl extends Thread {
 	}
 
 	public void ApproachStop(int stop, int Direction) throws Exception {
-		// long time_ms = 0;
-		// StopWatch myStopWatch = new StopWatch();
 		if (Direction == 1) {
 			switch (stop) {
 			case 1:
