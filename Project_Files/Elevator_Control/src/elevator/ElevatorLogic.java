@@ -340,35 +340,35 @@ public class ElevatorLogic extends Thread{
 	}
 	
 	public void printElevatorInfo(String event) {
-        for(int i=0;i<15;i++) {
-            System.out.printf("_");
-        }
-        System.out.printf("\nTESTOUTPUT: (Event: " + event + ")\n");
-        for(int i=0;i<15;i++) {
-            System.out.printf("_");
-        }
-        System.out.printf("\n");
-
-        System.out.printf("down_requests:\n");
-        for(int i = 0; i < down_requests.size(); i++) {
-            System.out.printf("%d\n", down_requests.get(i));
-        }
-        System.out.printf("\nup_requests:\n");
-        for(int i = 0; i < up_requests.size(); i++) {
-            System.out.printf("%d\n", up_requests.get(i));
-        }
-        System.out.printf("\ndown_wait:\n");
-        for(int i = 0; i < down_wait.size(); i++) {
-            System.out.printf("%d\n", down_wait.get(i));
-        }
-        System.out.printf("\nup_wait:\n");
-        for(int i = 0; i < up_wait.size(); i++) {
-            System.out.printf("%d\n", up_wait.get(i));
-        }
-
-        System.out.printf("\nNext target: %d\n", next_target_floor);
-        System.out.printf("\nCurrent floor: %d\n", current_floor);
-        System.out.printf("\nCurrent direction: %d\n", current_direction);
+        System.out.println();
+        printBar();
+        System.out.println();
+        System.out.printf("TESTOUTPUT: (Event: " + event + ")\n");
+        printBar();
+        System.out.println();
+        System.out.printf("down_requests:\t");
+        printArray(down_requests);
+        System.out.printf("up_requests:\t");
+        printArray(up_requests);
+        System.out.printf("down_wait:\t");
+        printArray(down_wait);
+        System.out.printf("up_wait:\t");
+        printArray(up_wait);
+        System.out.printf("\nNext target: %d\t", next_target_floor);
+        System.out.printf("\nCurrent floor: %d\t", current_floor);
+        System.out.printf("\nCurrent direction: %d\t\n", current_direction);
     }
-	
+
+    private void printBar() {
+        for(int i=0; i<17; i++) {
+            System.out.printf("__");
+        }
+    }
+
+    private void printArray(List<Integer> list) {
+        for(int i = 0; i < list.size(); i++) {
+            System.out.printf("%d\t", list.get(i));
+        }
+        System.out.println();
+    }
 }

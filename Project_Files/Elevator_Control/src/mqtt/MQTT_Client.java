@@ -1,5 +1,7 @@
 package mqtt;
 
+import java.time.LocalDateTime;
+
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -39,6 +41,34 @@ public class MQTT_Client {
     public void publish(String topic, String payload) throws MqttException {
         client.publish(topic, payload.getBytes(), qos, retained);
     } 
+    
+    public void publish_String(String key, String value, JSONObject json)
+    {
+    	try {
+    		json.put("timestamp", LocalDateTime.now());
+    		json.put(key, value);
+    		publish("/22WS-SysArch/C2", json.toString());
+    		json.remove("timestamp");
+    		json.remove(key);
+    	}catch(Exception e)
+    	{
+    		e.printStackTrace();
+    	}
+    }
+    
+    public void publish_Int(String key, int value, JSONObject json)
+    {
+    	try {
+    		json.put("timestamp", LocalDateTime.now());
+    		json.put(key, value);
+    		publish("/22WS-SysArch/C2", json.toString());
+    		json.remove("timestamp");
+    		json.remove(key);
+    	}catch(Exception e)
+    	{
+    		e.printStackTrace();
+    	}
+    }
 
     public void subscribe(String topic) throws MqttException {
         client.subscribe(topic, MqttEventHandler);
